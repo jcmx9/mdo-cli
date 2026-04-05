@@ -66,11 +66,7 @@ def new(
     lines.append("---")
 
     fm_text = "\n".join(lines)
-    content = (
-        f"{fm_text}\n\n"
-        "<!-- Druck: immer mit Skalierung 100% drucken! -->\n\n"
-        "Sehr geehrte Damen und Herren,\n\n\n"
-    )
+    content = f"{fm_text}\n\nSehr geehrte Damen und Herren,\n\n\n"
 
     Path(target).write_text(content)
     typer.echo(f"Created {target}")
