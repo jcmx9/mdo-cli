@@ -3,6 +3,7 @@ from typing import Optional
 import typer
 
 from mdo import __version__
+from mdo.commands.profile import profile
 
 app = typer.Typer(
     name="mdo",
@@ -25,3 +26,6 @@ def main(
     ),
 ) -> None:
     """Generate DIN 5008 Form A business letters as PDF/A from Markdown."""
+
+
+app.command()(profile)
