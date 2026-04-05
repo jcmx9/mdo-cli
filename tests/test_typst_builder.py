@@ -105,3 +105,28 @@ def test_qr_false() -> None:
         signature=None,
     )
     assert "qr: false" in result
+
+
+def test_quotes_in_name_are_escaped() -> None:
+    result = build_typst(
+        sender={
+            "name": 'Max "der" Muster',
+            "street": "",
+            "zip": "",
+            "city": "",
+            "phone": "",
+            "email": "",
+            "iban": "",
+            "bic": "",
+            "bank": "",
+            "qr_code": False,
+        },
+        recipient=["Firma GmbH"],
+        date="01. Januar 2026",
+        subject='Test "Betreff"',
+        body="Text.",
+        closing="Gruß",
+        signature=None,
+    )
+    assert r'name: "Max \"der\" Muster"' in result
+    assert r'subject: "Test \"Betreff\""' in result

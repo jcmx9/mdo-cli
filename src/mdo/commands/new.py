@@ -68,5 +68,5 @@ def new(
     fm_text = "\n".join(lines)
     content = f"{fm_text}\n\nSehr geehrte Damen und Herren,\n\n\n"
 
-    Path(target).write_text(content)
+    Path(target).write_text(content, encoding="utf-8")
     typer.echo(f"Created {target}")

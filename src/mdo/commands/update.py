@@ -1,25 +1,14 @@
-import platform
 import re
+import shutil
 import subprocess
 import tempfile
 from pathlib import Path
 
 import typer
 
+from mdo.core.paths import PACKAGE_NAME, typst_packages_dir
+
 REPO_URL = "https://github.com/jcmx9/typst-DIN5008a.git"
-PACKAGE_NAME = "din5008a"
-
-
-def _packages_dir() -> Path:
-    """Return the local Typst packages directory for the current OS."""
-    system = platform.system()
-    if system == "Darwin":
-        return Path.home() / "Library" / "Application Support" / "typst" / "packages" / "local"
-    if system == "Linux":
-        return Path.home() / ".local" / "share" / "typst" / "packages" / "local"
-    # Windows
-    app_data = Path.home() / "AppData" / "Roaming" / "typst" / "packages" / "local"
-    return app_data
 
 
 def _read_version(repo_dir: Path) -> str:
@@ -57,20 +46,23 @@ def update() -> None:
             raise typer.Exit(1)
 
         version = _read_version(tmp_path)
-        target = _packages_dir() / PACKAGE_NAME / version
+        target = typst_packages_dir() / PACKAGE_NAME / version
         target.mkdir(parents=True, exist_ok=True)
 
-        # Copy src/* and typst.toml
+        # Copy src/ contents (including subdirectories)
         src_dir = tmp_path / "src"
         if not src_dir.exists():
             typer.echo("Error: src/ directory not found in template repo", err=True)
             raise typer.Exit(1)
 
-        for f in src_dir.iterdir():
-            dest = target / f.name
-            dest.write_bytes(f.read_bytes())
+        for item in src_dir.iterdir():
+            dest = target / item.name
+            if item.is_dir():
+                shutil.copytree(item, dest, dirs_exist_ok=True)
+            else:
+                shutil.copy2(item, dest)
 
         toml_src = tmp_path / "typst.toml"
-        (target / "typst.toml").write_bytes(toml_src.read_bytes())
+        shutil.copy2(toml_src, target / "typst.toml")
 
         typer.echo(f"Installed {PACKAGE_NAME} v{version} to {target}")

@@ -122,6 +122,9 @@ def compile_letter(
     recipient: list[str] = (
         [str(r) for r in raw_recipient] if isinstance(raw_recipient, list) else []
     )
+    if not recipient:
+        typer.echo("Error: recipient is empty. Add at least one address line.", err=True)
+        raise typer.Exit(1)
     subject = str(fm.get("subject", "") or "")
     closing = str(fm.get("closing", "Mit freundlichem Gruß"))
 

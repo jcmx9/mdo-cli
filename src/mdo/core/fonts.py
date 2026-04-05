@@ -14,12 +14,13 @@ def check_fonts() -> list[str]:
             text=True,
             check=False,
         )
-        installed = result.stdout
+        # Split into individual family names for exact matching
+        # fc-list can return comma-separated families per line
+        installed: set[str] = set()
+        for line in result.stdout.splitlines():
+            for family in line.split(","):
+                installed.add(family.strip())
     except FileNotFoundError:
         return list(REQUIRED_FONTS)
 
-    missing: list[str] = []
-    for font in REQUIRED_FONTS:
-        if font not in installed:
-            missing.append(font)
-    return missing
+    return [font for font in REQUIRED_FONTS if font not in installed]

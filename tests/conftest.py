@@ -1,7 +1,6 @@
 from pathlib import Path
 
 import pytest
-import yaml
 
 
 @pytest.fixture
@@ -28,8 +27,24 @@ def profile_data() -> dict[str, object]:
     }
 
 
+PROFILE_YAML_CONTENT = """\
+name: Test User
+street: Teststrasse 1
+zip: 12345
+city: Teststadt
+phone: 0123 456789
+email: test@example.de
+iban: DE89 3704 0044 0532 0130 00
+bic: COBADEFFXXX
+bank: Testbank
+qr_code: true
+signature: null
+closing: Mit freundlichem Gruß
+"""
+
+
 @pytest.fixture
-def profile_yaml(work_dir: Path, profile_data: dict[str, object]) -> Path:
+def profile_yaml(work_dir: Path) -> Path:
     p = work_dir / "profile.yaml"
-    p.write_text(yaml.dump(profile_data, allow_unicode=True, default_flow_style=False))
+    p.write_text(PROFILE_YAML_CONTENT, encoding="utf-8")
     return p

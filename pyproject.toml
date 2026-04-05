@@ -1,6 +1,6 @@
 [project]
 name = "mdo-cli"
-version = "0.1.0"
+dynamic = ["version"]
 description = "Generate DIN 5008 Form A business letters as PDF/A from Markdown"
 requires-python = ">=3.12"
 license = "MIT"
@@ -16,6 +16,9 @@ mdo = "mdo.cli:app"
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.hatch.version]
+path = "src/mdo/__init__.py"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/mdo"]

@@ -54,7 +54,7 @@ pip install mdo-cli
 
 ```bash
 # 1. Create a sender profile
-mdo profile "Max Mustermann"
+mdo profile
 
 # 2. Edit profile.yaml with your data
 #    Optional: add a signature image (unterschrift.svg or .png recommended)
@@ -74,9 +74,9 @@ mdo compile 2026-04-05_Brief01.md
 
 ## Commands
 
-### `mdo profile NAME`
+### `mdo profile`
 
-Creates `profile.yaml` in the current directory.
+Interactive wizard to create `profile.yaml` in the current directory.
 
 ### `mdo new [FILENAME]`
 
@@ -179,7 +179,7 @@ pip install mdo-cli
 
 ```bash
 # 1. Absenderprofil anlegen
-mdo profile "Max Mustermann"
+mdo profile
 
 # 2. profile.yaml mit eigenen Daten bearbeiten
 #    Optional: Unterschrift-Bild hinzufuegen (unterschrift.svg oder .png empfohlen)
