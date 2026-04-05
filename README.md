@@ -33,7 +33,13 @@ Download the latest release of each, install the files from the `TTF/` or `OTF/`
 
 ### din5008a Template
 
-Install the Typst template locally:
+Install or update the Typst template with:
+
+```bash
+mdo update
+```
+
+Or manually:
 
 ```bash
 git clone https://github.com/jcmx9/typst-DIN5008a.git
@@ -45,9 +51,7 @@ cp typst-DIN5008a/typst.toml ~/.local/share/typst/packages/local/din5008a/0.1.1/
 ## Installation
 
 ```bash
-uv tool install mdo-cli
-# or
-pip install mdo-cli
+uv tool install git+https://github.com/jcmx9/mdo-cli.git
 ```
 
 ## Quick Start
@@ -85,6 +89,10 @@ Creates a letter `.md` with frontmatter from `profile.yaml`. Without `FILENAME`,
 ### `mdo compile FILENAME.md`
 
 Compiles a letter `.md` to PDF/A-2b. Checks for required fonts before compilation.
+
+### `mdo update`
+
+Downloads/updates the din5008a Typst template to the local packages directory.
 
 ## Field Reference
 
@@ -158,7 +166,13 @@ Jeweils den neuesten Release herunterladen und die Dateien aus dem `TTF/`- oder 
 
 ### din5008a-Template
 
-Das Typst-Template lokal installieren:
+Typst-Template installieren oder aktualisieren:
+
+```bash
+mdo update
+```
+
+Oder manuell:
 
 ```bash
 git clone https://github.com/jcmx9/typst-DIN5008a.git
@@ -170,9 +184,7 @@ cp typst-DIN5008a/typst.toml ~/.local/share/typst/packages/local/din5008a/0.1.1/
 ## Installation
 
 ```bash
-uv tool install mdo-cli
-# oder
-pip install mdo-cli
+uv tool install git+https://github.com/jcmx9/mdo-cli.git
 ```
 
 ## Schnellstart
@@ -199,9 +211,9 @@ mdo compile 2026-04-05_Brief01.md
 
 ## Befehle
 
-### `mdo profile NAME`
+### `mdo profile`
 
-Erstellt `profile.yaml` im aktuellen Verzeichnis.
+Interaktiver Wizard zum Erstellen von `profile.yaml` im aktuellen Verzeichnis.
 
 ### `mdo new [DATEINAME]`
 
@@ -210,6 +222,10 @@ Erstellt eine Brief-`.md` mit Frontmatter aus `profile.yaml`. Ohne `DATEINAME` w
 ### `mdo compile DATEINAME.md`
 
 Kompiliert eine Brief-`.md` zu PDF/A-2b. Prueft vorher, ob die benoetigten Schriften installiert sind.
+
+### `mdo update`
+
+Laedt das din5008a Typst-Template herunter oder aktualisiert es.
 
 ## Feldreferenz
 
