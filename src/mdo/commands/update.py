@@ -49,18 +49,13 @@ def update() -> None:
         target = typst_packages_dir() / PACKAGE_NAME / version
         target.mkdir(parents=True, exist_ok=True)
 
-        # Copy src/ contents (including subdirectories)
+        # Copy src/ directory (preserving structure for entrypoint "src/lib.typ")
         src_dir = tmp_path / "src"
         if not src_dir.exists():
             typer.echo("Error: src/ directory not found in template repo", err=True)
             raise typer.Exit(1)
 
-        for item in src_dir.iterdir():
-            dest = target / item.name
-            if item.is_dir():
-                shutil.copytree(item, dest, dirs_exist_ok=True)
-            else:
-                shutil.copy2(item, dest)
+        shutil.copytree(src_dir, target / "src", dirs_exist_ok=True)
 
         toml_src = tmp_path / "typst.toml"
         shutil.copy2(toml_src, target / "typst.toml")
