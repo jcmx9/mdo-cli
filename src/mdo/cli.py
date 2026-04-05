@@ -6,6 +6,7 @@ from mdo import __version__
 from mdo.commands.compile import compile_letter
 from mdo.commands.new import new
 from mdo.commands.profile import profile
+from mdo.commands.update import update
 
 app = typer.Typer(
     name="mdo",
@@ -37,3 +38,4 @@ def main(
 app.command("compile")(compile_letter)
 app.command()(new)
 app.command()(profile)
+app.command()(update)
