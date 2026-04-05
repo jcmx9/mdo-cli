@@ -1,4 +1,5 @@
 import datetime
+import platform
 import subprocess
 from pathlib import Path
 
@@ -157,6 +158,34 @@ def compile_letter(
             raise typer.Exit(1)
 
         typer.echo(f"Created {pdf_path}")
+
+        # Post-compile actions from frontmatter
+        if fm.get("open"):
+            _open_file(pdf_path)
+        if fm.get("reveal"):
+            _reveal_file(pdf_path)
     finally:
         if typ_path.exists():
             typ_path.unlink()
+
+
+def _open_file(path: Path) -> None:
+    """Open file with the default application."""
+    system = platform.system()
+    if system == "Darwin":
+        subprocess.run(["open", str(path)], check=False)
+    elif system == "Linux":
+        subprocess.run(["xdg-open", str(path)], check=False)
+    else:
+        subprocess.run(["start", "", str(path)], check=False, shell=True)  # noqa: S603
+
+
+def _reveal_file(path: Path) -> None:
+    """Reveal file in the system file manager."""
+    system = platform.system()
+    if system == "Darwin":
+        subprocess.run(["open", "-R", str(path)], check=False)
+    elif system == "Linux":
+        subprocess.run(["xdg-open", str(path.parent)], check=False)
+    else:
+        subprocess.run(["explorer", "/select,", str(path)], check=False)

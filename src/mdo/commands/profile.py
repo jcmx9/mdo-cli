@@ -52,6 +52,8 @@ def profile() -> None:
     data["signature"] = None
     closing = typer.prompt("  Schlussgruss", default="Mit freundlichem Gruß")
     data["closing"] = closing
+    data["open"] = True
+    data["reveal"] = True
 
     _write_profile(data, path)
     typer.echo(f"\nCreated {PROFILE_FILE}")
