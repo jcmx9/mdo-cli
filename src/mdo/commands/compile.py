@@ -10,8 +10,18 @@ from mdo.core.markdown import md_to_typst
 from mdo.core.typst_builder import build_typst
 
 GERMAN_MONTHS = [
-    "Januar", "Februar", "März", "April", "Mai", "Juni",
-    "Juli", "August", "September", "Oktober", "November", "Dezember",
+    "Januar",
+    "Februar",
+    "März",
+    "April",
+    "Mai",
+    "Juni",
+    "Juli",
+    "August",
+    "September",
+    "Oktober",
+    "November",
+    "Dezember",
 ]
 
 REQUIRED_FIELDS = {"name", "street", "zip", "city", "recipient", "closing"}
@@ -108,9 +118,10 @@ def compile_letter(
         "qr_code": fm.get("qr_code", False),
     }
 
-    recipient = fm.get("recipient", [])
-    subject = fm.get("subject", "")
-    closing = fm.get("closing", "Mit freundlichem Gruß")
+    raw_recipient = fm.get("recipient", [])
+    recipient: list[str] = [str(r) for r in raw_recipient] if isinstance(raw_recipient, list) else []
+    subject = str(fm.get("subject", "") or "")
+    closing = str(fm.get("closing", "Mit freundlichem Gruß"))
 
     # Generate .typ
     typ_content = build_typst(

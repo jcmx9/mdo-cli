@@ -17,14 +17,14 @@ def build_typst(
 
 #show: din5008a.with(
   sender: (
-    name: "{sender['name']}",
-    street: "{sender['street']}",
+    name: "{sender["name"]}",
+    street: "{sender["street"]}",
     city: "{city_combined}",
-    phone: "{sender['phone']}",
-    email: "{sender['email']}",
-    iban: "{sender['iban']}",
-    bic: "{sender['bic']}",
-    bank: "{sender['bank']}",
+    phone: "{sender["phone"]}",
+    email: "{sender["email"]}",
+    iban: "{sender["iban"]}",
+    bic: "{sender["bic"]}",
+    bank: "{sender["bank"]}",
     qr: {qr},
   ),
   recipient: ({recipient_str}),

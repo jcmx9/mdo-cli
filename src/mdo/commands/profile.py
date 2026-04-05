@@ -32,7 +32,5 @@ def profile(name: str = typer.Argument(help="Sender name for the profile")) -> N
     data = dict(PROFILE_TEMPLATE)
     data["name"] = name
 
-    path.write_text(
-        yaml.dump(data, allow_unicode=True, default_flow_style=False, sort_keys=False)
-    )
+    path.write_text(yaml.dump(data, allow_unicode=True, default_flow_style=False, sort_keys=False))
     typer.echo(f"Created {PROFILE_FILE}")

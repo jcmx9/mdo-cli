@@ -26,7 +26,7 @@ def test_basic_output() -> None:
     assert 'name: "Max Mustermann"' in result
     assert 'street: "Musterstrasse 1"' in result
     assert 'city: "12345 Musterstadt"' in result
-    assert 'qr: true' in result
+    assert "qr: true" in result
     assert 'date: "05. April 2026"' in result
     assert 'subject: "Testbetreff"' in result
     assert '"Firma GmbH"' in result
@@ -36,9 +36,18 @@ def test_basic_output() -> None:
 
 def test_with_signature() -> None:
     result = build_typst(
-        sender={"name": "Test", "street": "", "zip": "", "city": "",
-                "phone": "", "email": "", "iban": "", "bic": "", "bank": "",
-                "qr_code": False},
+        sender={
+            "name": "Test",
+            "street": "",
+            "zip": "",
+            "city": "",
+            "phone": "",
+            "email": "",
+            "iban": "",
+            "bic": "",
+            "bank": "",
+            "qr_code": False,
+        },
         recipient=["Empfaenger"],
         date="01. Januar 2026",
         subject="Test",
@@ -51,9 +60,18 @@ def test_with_signature() -> None:
 
 def test_no_signature() -> None:
     result = build_typst(
-        sender={"name": "Test", "street": "", "zip": "", "city": "",
-                "phone": "", "email": "", "iban": "", "bic": "", "bank": "",
-                "qr_code": False},
+        sender={
+            "name": "Test",
+            "street": "",
+            "zip": "",
+            "city": "",
+            "phone": "",
+            "email": "",
+            "iban": "",
+            "bic": "",
+            "bank": "",
+            "qr_code": False,
+        },
         recipient=["Empfaenger"],
         date="01. Januar 2026",
         subject="Test",
@@ -67,9 +85,18 @@ def test_no_signature() -> None:
 
 def test_qr_false() -> None:
     result = build_typst(
-        sender={"name": "Test", "street": "", "zip": "", "city": "",
-                "phone": "", "email": "", "iban": "", "bic": "", "bank": "",
-                "qr_code": False},
+        sender={
+            "name": "Test",
+            "street": "",
+            "zip": "",
+            "city": "",
+            "phone": "",
+            "email": "",
+            "iban": "",
+            "bic": "",
+            "bank": "",
+            "qr_code": False,
+        },
         recipient=["Empfaenger"],
         date="01. Januar 2026",
         subject="Test",

@@ -49,12 +49,14 @@ def new(
     ]
 
     # Write with manual YAML to place the date comment
-    fm_text = yaml.dump(
-        fm, allow_unicode=True, default_flow_style=False, sort_keys=False
-    )
+    fm_text = yaml.dump(fm, allow_unicode=True, default_flow_style=False, sort_keys=False)
     fm_text = fm_text.replace("date: null", "date: null  # JJJJ-MM-TT")
 
-    content = f"---\n{fm_text}---\n\nSehr geehrte Damen und Herren,\n\n\n"
+    content = (
+        f"---\n{fm_text}---\n\n"
+        "<!-- Druck: immer mit Skalierung 100% drucken! -->\n\n"
+        "Sehr geehrte Damen und Herren,\n\n\n"
+    )
 
     Path(target).write_text(content)
     typer.echo(f"Created {target}")
