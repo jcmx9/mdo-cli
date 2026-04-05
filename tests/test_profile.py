@@ -8,8 +8,9 @@ from mdo.cli import app
 runner = CliRunner()
 
 
-def test_profile_creates_yaml(work_dir: Path) -> None:
-    result = runner.invoke(app, ["profile", "Max Mustermann"])
+def test_profile_creates_yaml_with_defaults(work_dir: Path) -> None:
+    # Press Enter for all prompts (accept defaults)
+    result = runner.invoke(app, ["profile"], input="\n" * 12)
     assert result.exit_code == 0
     p = work_dir / "profile.yaml"
     assert p.exists()
@@ -28,8 +29,27 @@ def test_profile_creates_yaml(work_dir: Path) -> None:
     assert "bank" in data
 
 
+def test_profile_creates_yaml_with_custom_values(work_dir: Path) -> None:
+    inputs = "Anna Weber\nLindenallee 12\n80331\nMuenchen\n089 123\nanna@example.de\nDE91 1234\nBFSWDE33\nTestbank\nja\nnull\nMit herzlichen Gruessen\n"
+    result = runner.invoke(app, ["profile"], input=inputs)
+    assert result.exit_code == 0
+    data = yaml.safe_load((work_dir / "profile.yaml").read_text())
+    assert data["name"] == "Anna Weber"
+    assert data["city"] == "Muenchen"
+    assert data["zip"] == 80331  # yaml parses unquoted number
+
+
+def test_profile_no_quotes_on_zip(work_dir: Path) -> None:
+    result = runner.invoke(app, ["profile"], input="\n" * 12)
+    assert result.exit_code == 0
+    raw = (work_dir / "profile.yaml").read_text()
+    assert "zip: 12345" in raw
+    assert "'12345'" not in raw
+    assert '"12345"' not in raw
+
+
 def test_profile_aborts_if_exists(work_dir: Path) -> None:
     (work_dir / "profile.yaml").write_text("name: Old")
-    result = runner.invoke(app, ["profile", "New Name"])
+    result = runner.invoke(app, ["profile"], input="\n")
     assert result.exit_code != 0
     assert "already exists" in result.output

@@ -22,6 +22,18 @@ def _next_filename() -> str:
     return f"{today}_Brief{counter:02d}.md"
 
 
+def _format_value(value: object) -> str:
+    """Format a value for YAML frontmatter without quoting strings."""
+    if value is None:
+        return "null"
+    if isinstance(value, bool):
+        return "true" if value else "false"
+    if isinstance(value, list):
+        lines = [f"\n  - {item}" for item in value]
+        return "".join(lines)
+    return str(value)
+
+
 def new(
     filename: Optional[str] = typer.Argument(  # noqa: UP007
         None, help="Output filename (auto-generated if omitted)"
@@ -37,23 +49,25 @@ def new(
 
     target = filename if filename else _next_filename()
 
-    # Build frontmatter: profile fields + letter-specific fields
-    fm = dict(profile_data)
-    fm["date"] = None
-    fm["subject"] = None
-    fm["recipient"] = [
-        "Firma GmbH",
-        "Frau / Herrn Vorname Nachname",
-        "Strasse Nr.",
-        "PLZ Ort",
-    ]
+    # Build frontmatter lines manually to avoid yaml.dump quoting
+    lines: list[str] = ["---"]
+    for key, value in profile_data.items():
+        lines.append(f"{key}: {_format_value(value)}")
 
-    # Write with manual YAML to place the date comment
-    fm_text = yaml.dump(fm, allow_unicode=True, default_flow_style=False, sort_keys=False)
-    fm_text = fm_text.replace("date: null", "date: null  # JJJJ-MM-TT")
+    lines.append("date: null  # JJJJ-MM-TT")
+    lines.append("subject: null")
+    lines.append(
+        "recipient:"
+        "\n  - Firma GmbH"
+        "\n  - Frau / Herrn Vorname Nachname"
+        "\n  - Strasse Nr."
+        "\n  - PLZ Ort"
+    )
+    lines.append("---")
 
+    fm_text = "\n".join(lines)
     content = (
-        f"---\n{fm_text}---\n\n"
+        f"{fm_text}\n\n"
         "<!-- Druck: immer mit Skalierung 100% drucken! -->\n\n"
         "Sehr geehrte Damen und Herren,\n\n\n"
     )

@@ -119,7 +119,9 @@ def compile_letter(
     }
 
     raw_recipient = fm.get("recipient", [])
-    recipient: list[str] = [str(r) for r in raw_recipient] if isinstance(raw_recipient, list) else []
+    recipient: list[str] = (
+        [str(r) for r in raw_recipient] if isinstance(raw_recipient, list) else []
+    )
     subject = str(fm.get("subject", "") or "")
     closing = str(fm.get("closing", "Mit freundlichem Gruß"))
 
