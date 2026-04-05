@@ -3,6 +3,7 @@ from typing import Optional
 import typer
 
 from mdo import __version__
+from mdo.commands.compile import compile_letter
 from mdo.commands.new import new
 from mdo.commands.profile import profile
 
@@ -29,5 +30,6 @@ def main(
     """Generate DIN 5008 Form A business letters as PDF/A from Markdown."""
 
 
+app.command("compile")(compile_letter)
 app.command()(new)
 app.command()(profile)
