@@ -131,7 +131,7 @@ Creates a letter `.md` with frontmatter from `profile.yaml`. Without `FILENAME`,
 
 ### `mdo compile FILENAME.md`
 
-Compiles a letter `.md` to PDF/A-2b via Pandoc and Typst. Checks for required fonts before compilation.
+Compiles a letter `.md` to PDF/A-2b via Pandoc and Typst. Checks for required fonts before compilation. After successful compile, both `.md` and `.pdf` are renamed to `YYYY-MM-DD_recipient - subject` (e.g. `2026-04-06_Firma GmbH - Bewerbung.pdf`).
 
 ### `mdo update`
 
@@ -311,7 +311,7 @@ Erstellt eine Brief-`.md` mit Frontmatter aus `profile.yaml`. Ohne `DATEINAME` w
 
 ### `mdo compile DATEINAME.md`
 
-Kompiliert eine Brief-`.md` zu PDF/A-2b via Pandoc und Typst. Prueft vorher, ob die benoetigten Schriften installiert sind.
+Kompiliert eine Brief-`.md` zu PDF/A-2b via Pandoc und Typst. Prueft vorher, ob die benoetigten Schriften installiert sind. Nach erfolgreicher Kompilierung werden `.md` und `.pdf` umbenannt zu `JJJJ-MM-TT_Empfaenger - Betreff` (z.B. `2026-04-06_Firma GmbH - Bewerbung.pdf`).
 
 ### `mdo update`
 
