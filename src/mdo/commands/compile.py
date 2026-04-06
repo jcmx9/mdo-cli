@@ -74,6 +74,7 @@ def _parse_letter(path: Path) -> tuple[dict[str, object], str]:
 
 def compile_letter(
     filename: str = typer.Argument(help="Letter .md file to compile"),
+    typ: bool = typer.Option(False, "--typ", help="Keep the generated .typ file"),
 ) -> None:
     """Compile a letter .md to PDF/A-2b."""
     path = Path(filename)
@@ -174,7 +175,7 @@ def compile_letter(
         if data.reveal:
             _reveal_file(pdf_path)
     finally:
-        if typ_path.exists():
+        if not typ and typ_path.exists():
             typ_path.unlink()
         if json_path.exists():
             json_path.unlink()
