@@ -19,7 +19,7 @@ def test_profile_creates_yaml_with_defaults(work_dir: Path) -> None:
     assert data["qr_code"] is True
     assert data["signature"] is True
     assert data["closing"] == "Mit freundlichem Gruß"
-    assert data["accent"] == "#B03060"
+    assert data["accent"] is None
     assert "street" in data
     assert "zip" in data
     assert "city" in data

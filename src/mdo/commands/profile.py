@@ -15,22 +15,46 @@ PROFILE_FIELDS = [
     ("iban", "IBAN", "DE89 3704 0044 0532 0130 00"),
     ("bic", "BIC", "COBADEFFXXX"),
     ("bank", "Bank", "Commerzbank"),
-    ("accent", "Akzentfarbe (Hex)", "#B03060"),
+    ("accent", "Akzentfarbe (Hex oder null)", "null"),
 ]
+
+FIELD_COMMENTS: dict[str, str] = {
+    "name": "Absendername",
+    "street": "Strasse und Hausnummer",
+    "zip": "Postleitzahl",
+    "city": "Ort",
+    "phone": "Telefonnummer",
+    "email": "E-Mail-Adresse",
+    "iban": "Bank-IBAN",
+    "bic": "Bank-BIC",
+    "bank": "Bankname",
+    "accent": "Akzentfarbe als Hex (null = Template-Standard)",
+    "qr_code": "vCard-QR-Code im Infoblock anzeigen",
+    "signature": "Unterschrift-Datei automatisch suchen (unterschrift.svg/png/jpg/gif)",
+    "closing": "Schlussgruss",
+    "open": "PDF nach Kompilierung oeffnen",
+    "reveal": "PDF im Dateimanager anzeigen",
+}
 
 
 def _write_profile(data: dict[str, object], path: Path) -> None:
-    """Write profile.yaml without quoting string values."""
+    """Write profile.yaml with inline comments."""
     lines: list[str] = []
     for key, value in data.items():
         if value is None:
-            lines.append(f"{key}: null")
+            formatted = "null"
         elif isinstance(value, bool):
-            lines.append(f"{key}: {'true' if value else 'false'}")
+            formatted = "true" if value else "false"
         elif isinstance(value, str) and value.startswith("#"):
-            lines.append(f'{key}: "{value}"')
+            formatted = f'"{value}"'
         else:
-            lines.append(f"{key}: {value}")
+            formatted = str(value)
+
+        comment = FIELD_COMMENTS.get(key, "")
+        if comment:
+            lines.append(f"{key}: {formatted}  # {comment}")
+        else:
+            lines.append(f"{key}: {formatted}")
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
@@ -47,7 +71,10 @@ def profile() -> None:
 
     for key, label, default in PROFILE_FIELDS:
         value = typer.prompt(f"  {label}", default=default)
-        data[key] = value
+        if key == "accent" and value.lower() == "null":
+            data[key] = None
+        else:
+            data[key] = value
 
     # Non-interactive fields with sensible defaults
     qr_input = typer.prompt("  vCard QR-Code anzeigen (ja/nein)", default="ja")

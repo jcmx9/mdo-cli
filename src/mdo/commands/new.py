@@ -6,7 +6,7 @@ from typing import Optional
 import typer
 import yaml
 
-from mdo.commands.profile import PROFILE_FILE
+from mdo.commands.profile import FIELD_COMMENTS, PROFILE_FILE
 
 
 def _next_filename() -> str:
@@ -37,6 +37,14 @@ def _format_value(value: object) -> str:
     return s
 
 
+LETTER_COMMENTS: dict[str, str] = {
+    "date": "Briefdatum, JJJJ-MM-TT (null = heute)",
+    "subject": "Betreffzeile",
+    "recipient": "Empfaenger-Adresszeilen",
+    "attachments": "Anlagen (am Briefende dargestellt)",
+}
+
+
 def new(
     filename: Optional[str] = typer.Argument(  # noqa: UP007
         None, help="Output filename (auto-generated if omitted)"
@@ -52,21 +60,31 @@ def new(
 
     target = filename if filename else _next_filename()
 
+    # Merge all comments
+    comments = {**FIELD_COMMENTS, **LETTER_COMMENTS}
+
     # Build frontmatter lines manually to avoid yaml.dump quoting
     lines: list[str] = ["---"]
     for key, value in profile_data.items():
-        lines.append(f"{key}: {_format_value(value)}")
+        comment = comments.get(key, "")
+        suffix = f"  # {comment}" if comment else ""
+        lines.append(f"{key}: {_format_value(value)}{suffix}")
 
-    lines.append("date: null  # JJJJ-MM-TT")
-    lines.append("subject: null")
+    lines.append(f"date: null  # {comments['date']}")
+    lines.append(f"subject: null  # {comments['subject']}")
     lines.append(
-        "recipient:"
+        f"recipient:  # {comments['recipient']}"
         "\n  - Firma GmbH"
         "\n  - Frau / Herrn Vorname Nachname"
         "\n  - Strasse Nr."
         "\n  - PLZ Ort"
     )
-    lines.append("attachments: []")
+    lines.append(
+        f"# attachments:  # {comments['attachments']}"
+        "\n#   - Lebenslauf"
+        "\n#   - Zeugnis"
+        "\nattachments: []"
+    )
     lines.append("---")
 
     fm_text = "\n".join(lines)

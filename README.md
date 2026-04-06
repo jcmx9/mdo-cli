@@ -60,21 +60,21 @@ Result: `profile.yaml` in the current directory.
 
 ```yaml
 # profile.yaml (example)
-name: Max Mustermann
-street: Musterstrasse 1
-zip: 12345
-city: Musterstadt
-phone: 0123 456789
-email: max@example.de
-iban: DE89 3704 0044 0532 0130 00
-bic: COBADEFFXXX
-bank: Commerzbank
-accent: "#B03060"
-qr_code: true
-signature: unterschrift.svg
-closing: Mit freundlichem Gruss
-open: true
-reveal: true
+name: Max Mustermann  # Absendername
+street: Musterstrasse 1  # Strasse und Hausnummer
+zip: 12345  # Postleitzahl
+city: Musterstadt  # Ort
+phone: 0123 456789  # Telefonnummer
+email: max@example.de  # E-Mail-Adresse
+iban: DE89 3704 0044 0532 0130 00  # Bank-IBAN
+bic: COBADEFFXXX  # Bank-BIC
+bank: Commerzbank  # Bankname
+accent: null  # Akzentfarbe als Hex (null = Template-Standard)
+qr_code: true  # vCard-QR-Code im Infoblock anzeigen
+signature: true  # Unterschrift-Datei automatisch suchen
+closing: Mit freundlichem Gruss  # Schlussgruss
+open: true  # PDF nach Kompilierung oeffnen
+reveal: true  # PDF im Dateimanager anzeigen
 ```
 
 ```bash
@@ -86,18 +86,21 @@ Generates a `.md` file (e.g. `2026-04-06_Brief01.md`) with frontmatter from your
 
 ```markdown
 ---
-name: Max Mustermann
-street: Musterstrasse 1
-zip: 12345
-city: Musterstadt
+name: Max Mustermann  # Absendername
+street: Musterstrasse 1  # Strasse und Hausnummer
+zip: 12345  # Postleitzahl
+city: Musterstadt  # Ort
 ...
-date: null  # YYYY-MM-DD (null = today)
-subject: null
-recipient:
+date: null  # Briefdatum, JJJJ-MM-TT (null = heute)
+subject: null  # Betreffzeile
+recipient:  # Empfaenger-Adresszeilen
   - Firma GmbH
   - Frau / Herrn Vorname Nachname
   - Strasse Nr.
   - PLZ Ort
+# attachments:  # Anlagen (am Briefende dargestellt)
+#   - Lebenslauf
+#   - Zeugnis
 attachments: []
 ---
 
@@ -153,9 +156,9 @@ Downloads/updates the din5008a Typst template to the local packages directory.
 | `bic` | string | Bank BIC |
 | `bank` | string | Bank name |
 | `qr_code` | boolean | Show vCard QR code |
-| `signature` | string/null | Signature filename (e.g. `unterschrift.svg`) |
+| `signature` | boolean | Auto-detect signature file (unterschrift.svg/png/jpg/gif) |
 | `closing` | string | Closing line (e.g. "Mit freundlichem Gruss") |
-| `accent` | string | Accent color as hex (e.g. `"#B03060"`) |
+| `accent` | string/null | Accent color as hex (e.g. `"#B03060"`, `null` = template default) |
 | `open` | boolean | Open PDF after compile |
 | `reveal` | boolean | Reveal PDF in file manager after compile |
 
@@ -240,21 +243,21 @@ Ergebnis: `profile.yaml` im aktuellen Verzeichnis.
 
 ```yaml
 # profile.yaml (Beispiel)
-name: Max Mustermann
-street: Musterstrasse 1
-zip: 12345
-city: Musterstadt
-phone: 0123 456789
-email: max@example.de
-iban: DE89 3704 0044 0532 0130 00
-bic: COBADEFFXXX
-bank: Commerzbank
-accent: "#B03060"
-qr_code: true
-signature: unterschrift.svg
-closing: Mit freundlichem Gruss
-open: true
-reveal: true
+name: Max Mustermann  # Absendername
+street: Musterstrasse 1  # Strasse und Hausnummer
+zip: 12345  # Postleitzahl
+city: Musterstadt  # Ort
+phone: 0123 456789  # Telefonnummer
+email: max@example.de  # E-Mail-Adresse
+iban: DE89 3704 0044 0532 0130 00  # Bank-IBAN
+bic: COBADEFFXXX  # Bank-BIC
+bank: Commerzbank  # Bankname
+accent: null  # Akzentfarbe als Hex (null = Template-Standard)
+qr_code: true  # vCard-QR-Code im Infoblock anzeigen
+signature: true  # Unterschrift-Datei automatisch suchen
+closing: Mit freundlichem Gruss  # Schlussgruss
+open: true  # PDF nach Kompilierung oeffnen
+reveal: true  # PDF im Dateimanager anzeigen
 ```
 
 ```bash
@@ -266,18 +269,21 @@ Erzeugt eine `.md`-Datei (z.B. `2026-04-06_Brief01.md`) mit Frontmatter aus dem 
 
 ```markdown
 ---
-name: Max Mustermann
-street: Musterstrasse 1
-zip: 12345
-city: Musterstadt
+name: Max Mustermann  # Absendername
+street: Musterstrasse 1  # Strasse und Hausnummer
+zip: 12345  # Postleitzahl
+city: Musterstadt  # Ort
 ...
-date: null  # JJJJ-MM-TT (null = heute)
-subject: null
-recipient:
+date: null  # Briefdatum, JJJJ-MM-TT (null = heute)
+subject: null  # Betreffzeile
+recipient:  # Empfaenger-Adresszeilen
   - Firma GmbH
   - Frau / Herrn Vorname Nachname
   - Strasse Nr.
   - PLZ Ort
+# attachments:  # Anlagen (am Briefende dargestellt)
+#   - Lebenslauf
+#   - Zeugnis
 attachments: []
 ---
 
@@ -333,9 +339,9 @@ Laedt das din5008a Typst-Template herunter oder aktualisiert es.
 | `bic` | String | Bank-BIC |
 | `bank` | String | Bankname |
 | `qr_code` | Boolean | vCard-QR-Code anzeigen |
-| `signature` | String/null | Dateiname der Unterschrift (z.B. `unterschrift.svg`) |
+| `signature` | Boolean | Unterschrift-Datei automatisch suchen (unterschrift.svg/png/jpg/gif) |
 | `closing` | String | Schlussgruss (z.B. "Mit freundlichem Gruss") |
-| `accent` | String | Akzentfarbe als Hex (z.B. `"#B03060"`) |
+| `accent` | String/null | Akzentfarbe als Hex (z.B. `"#B03060"`, `null` = Template-Standard) |
 | `open` | Boolean | PDF nach Kompilierung oeffnen |
 | `reveal` | Boolean | PDF im Dateimanager anzeigen |
 

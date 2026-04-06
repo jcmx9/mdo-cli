@@ -45,7 +45,7 @@ class LetterData(BaseModel):
     date: str | None = None
     subject: str = ""
     recipient: list[str]
-    accent: str = "#B03060"
+    accent: str | None = None
     attachments: list[str] = []
 
     # Compile options
@@ -78,7 +78,9 @@ class LetterData(BaseModel):
 
     @field_validator("accent")
     @classmethod
-    def valid_hex_color(cls, v: str) -> str:
+    def valid_hex_color(cls, v: str | None) -> str | None:
+        if v is None:
+            return None
         if not re.match(r"^#[0-9a-fA-F]{6}$", v):
             msg = f"accent must be a hex color like #B03060, got '{v}'"
             raise ValueError(msg)

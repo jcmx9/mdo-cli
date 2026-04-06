@@ -24,6 +24,8 @@ def build_typst_files(*, data: LetterData, body: str) -> tuple[str, str]:
     }
     json_content = json.dumps(json_data, ensure_ascii=False, indent=2)
 
+    accent_line = "\n  accent: rgb(data.accent)," if data.accent else ""
+
     typ_content = f"""\
 #import "@local/din5008a:{version}": din5008a, bullet
 #let data = json("brief.json")
@@ -35,8 +37,7 @@ def build_typst_files(*, data: LetterData, body: str) -> tuple[str, str]:
   date: data.date,
   subject: data.subject,
   closing: data.closing,
-  signature: sig,
-  accent: rgb(data.accent),
+  signature: sig,{accent_line}
   attachments: data.at("attachments", default: ()),
 )
 

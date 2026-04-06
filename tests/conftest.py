@@ -24,7 +24,7 @@ def profile_data() -> dict[str, object]:
         "qr_code": True,
         "signature": True,
         "closing": "Mit freundlichem Gruß",
-        "accent": "#B03060",
+        "accent": None,
     }
 
 
@@ -41,7 +41,7 @@ bank: Testbank
 qr_code: true
 signature: true
 closing: Mit freundlichem Gruß
-accent: "#B03060"
+accent: null
 """
 
 
