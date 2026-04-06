@@ -31,7 +31,10 @@ def _format_value(value: object) -> str:
     if isinstance(value, list):
         lines = [f"\n  - {item}" for item in value]
         return "".join(lines)
-    return str(value)
+    s = str(value)
+    if s.startswith("#"):
+        return f'"{s}"'
+    return s
 
 
 def new(
@@ -63,6 +66,7 @@ def new(
         "\n  - Strasse Nr."
         "\n  - PLZ Ort"
     )
+    lines.append("attachments: []")
     lines.append("---")
 
     fm_text = "\n".join(lines)

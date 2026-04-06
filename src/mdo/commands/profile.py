@@ -15,6 +15,7 @@ PROFILE_FIELDS = [
     ("iban", "IBAN", "DE89 3704 0044 0532 0130 00"),
     ("bic", "BIC", "COBADEFFXXX"),
     ("bank", "Bank", "Commerzbank"),
+    ("accent", "Akzentfarbe (Hex)", "#B03060"),
 ]
 
 
@@ -26,6 +27,8 @@ def _write_profile(data: dict[str, object], path: Path) -> None:
             lines.append(f"{key}: null")
         elif isinstance(value, bool):
             lines.append(f"{key}: {'true' if value else 'false'}")
+        elif isinstance(value, str) and value.startswith("#"):
+            lines.append(f'{key}: "{value}"')
         else:
             lines.append(f"{key}: {value}")
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")

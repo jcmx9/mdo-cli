@@ -8,6 +8,7 @@ authors = [{name = "jcmx9", email = "jcmx9@tutamail.com"}]
 dependencies = [
     "typer>=0.15",
     "pyyaml>=6.0",
+    "pydantic>=2.0",
 ]
 
 [project.scripts]

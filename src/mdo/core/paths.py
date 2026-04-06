@@ -23,6 +23,7 @@ def find_installed_version() -> str:
 
     versions = sorted(
         (d.name for d in pkg_dir.iterdir() if d.is_dir()),
+        key=lambda v: tuple(int(x) for x in v.split(".")),
         reverse=True,
     )
     return versions[0] if versions else FALLBACK_VERSION

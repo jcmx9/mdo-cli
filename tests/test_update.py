@@ -33,7 +33,7 @@ def test_update_installs_template(mock_run: MagicMock, mock_dir: MagicMock, tmp_
     assert "0.2.0" in result.output
 
     installed = tmp_path / "packages" / "din5008a" / "0.2.0"
-    assert (installed / "lib.typ").exists()
+    assert (installed / "src" / "lib.typ").exists()
     assert (installed / "typst.toml").exists()
 
 

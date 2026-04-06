@@ -20,6 +20,7 @@ def test_new_with_explicit_filename(profile_yaml: Path, work_dir: Path) -> None:
     assert "JJJJ-MM-TT" in content
     assert "subject: null" in content
     assert "recipient:" in content
+    assert "attachments:" in content
     assert "Sehr geehrte Damen und Herren," in content
 
 

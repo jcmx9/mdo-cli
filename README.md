@@ -17,6 +17,9 @@ brew install uv
 
 # Typst (document compiler)
 brew install typst
+
+# Pandoc (document converter)
+brew install pandoc
 ```
 
 ### Required Fonts
@@ -44,7 +47,7 @@ Or manually:
 ```bash
 git clone https://github.com/jcmx9/typst-DIN5008a.git
 mkdir -p ~/.local/share/typst/packages/local/din5008a/0.1.1
-cp -r typst-DIN5008a/src/* ~/.local/share/typst/packages/local/din5008a/0.1.1/
+cp -r typst-DIN5008a/src ~/.local/share/typst/packages/local/din5008a/0.1.1/
 cp typst-DIN5008a/typst.toml ~/.local/share/typst/packages/local/din5008a/0.1.1/
 ```
 
@@ -60,8 +63,7 @@ uv tool install git+https://github.com/jcmx9/mdo-cli.git
 # 1. Create a sender profile
 mdo profile
 
-# 2. Edit profile.yaml with your data
-#    Optional: add a signature image (unterschrift.svg or .png recommended)
+# 2. Optional: add a signature image (unterschrift.svg or .png recommended)
 
 # 3. Create a new letter
 mdo new
@@ -88,7 +90,7 @@ Creates a letter `.md` with frontmatter from `profile.yaml`. Without `FILENAME`,
 
 ### `mdo compile FILENAME.md`
 
-Compiles a letter `.md` to PDF/A-2b. Checks for required fonts before compilation.
+Compiles a letter `.md` to PDF/A-2b via Pandoc and Typst. Checks for required fonts before compilation.
 
 ### `mdo update`
 
@@ -112,6 +114,9 @@ Downloads/updates the din5008a Typst template to the local packages directory.
 | `qr_code` | boolean | Show vCard QR code |
 | `signature` | string/null | Signature filename (e.g. `unterschrift.svg`) |
 | `closing` | string | Closing line (e.g. "Mit freundlichem Gruss") |
+| `accent` | string | Accent color as hex (e.g. `"#B03060"`) |
+| `open` | boolean | Open PDF after compile |
+| `reveal` | boolean | Reveal PDF in file manager after compile |
 
 ### Letter .md (additional fields)
 
@@ -120,10 +125,11 @@ Downloads/updates the din5008a Typst template to the local packages directory.
 | `date` | string/null | Letter date (`null` = today, format: `YYYY-MM-DD`) |
 | `subject` | string | Subject line |
 | `recipient` | list | Recipient address lines |
+| `attachments` | list | Attachment descriptions (rendered at end of letter) |
 
 ### Signature
 
-Place the signature image in the same directory as the letter. Supported formats: SVG, PNG, GIF, JPG. The file must be named `unterschrift.{ext}`. SVG or transparent PNG recommended.
+Place the signature image in the same directory as the letter. Supported formats: SVG, PNG, GIF, JPG. SVG or transparent PNG recommended.
 
 ## License
 
@@ -150,6 +156,9 @@ brew install uv
 
 # Typst (Dokumenten-Compiler)
 brew install typst
+
+# Pandoc (Dokumenten-Konverter)
+brew install pandoc
 ```
 
 ### Benoetigte Schriften
@@ -177,7 +186,7 @@ Oder manuell:
 ```bash
 git clone https://github.com/jcmx9/typst-DIN5008a.git
 mkdir -p ~/.local/share/typst/packages/local/din5008a/0.1.1
-cp -r typst-DIN5008a/src/* ~/.local/share/typst/packages/local/din5008a/0.1.1/
+cp -r typst-DIN5008a/src ~/.local/share/typst/packages/local/din5008a/0.1.1/
 cp typst-DIN5008a/typst.toml ~/.local/share/typst/packages/local/din5008a/0.1.1/
 ```
 
@@ -193,8 +202,7 @@ uv tool install git+https://github.com/jcmx9/mdo-cli.git
 # 1. Absenderprofil anlegen
 mdo profile
 
-# 2. profile.yaml mit eigenen Daten bearbeiten
-#    Optional: Unterschrift-Bild hinzufuegen (unterschrift.svg oder .png empfohlen)
+# 2. Optional: Unterschrift-Bild hinzufuegen (unterschrift.svg oder .png empfohlen)
 
 # 3. Neuen Brief anlegen
 mdo new
@@ -221,7 +229,7 @@ Erstellt eine Brief-`.md` mit Frontmatter aus `profile.yaml`. Ohne `DATEINAME` w
 
 ### `mdo compile DATEINAME.md`
 
-Kompiliert eine Brief-`.md` zu PDF/A-2b. Prueft vorher, ob die benoetigten Schriften installiert sind.
+Kompiliert eine Brief-`.md` zu PDF/A-2b via Pandoc und Typst. Prueft vorher, ob die benoetigten Schriften installiert sind.
 
 ### `mdo update`
 
@@ -245,6 +253,9 @@ Laedt das din5008a Typst-Template herunter oder aktualisiert es.
 | `qr_code` | Boolean | vCard-QR-Code anzeigen |
 | `signature` | String/null | Dateiname der Unterschrift (z.B. `unterschrift.svg`) |
 | `closing` | String | Schlussgruss (z.B. "Mit freundlichem Gruss") |
+| `accent` | String | Akzentfarbe als Hex (z.B. `"#B03060"`) |
+| `open` | Boolean | PDF nach Kompilierung oeffnen |
+| `reveal` | Boolean | PDF im Dateimanager anzeigen |
 
 ### Brief-`.md` (zusaetzliche Felder)
 
@@ -253,10 +264,11 @@ Laedt das din5008a Typst-Template herunter oder aktualisiert es.
 | `date` | String/null | Briefdatum (`null` = heute, Format: `JJJJ-MM-TT`) |
 | `subject` | String | Betreff |
 | `recipient` | Liste | Empfaenger-Adresszeilen |
+| `attachments` | Liste | Anlagen-Beschriftungen (am Briefende dargestellt) |
 
 ### Unterschrift
 
-Die Unterschrift-Datei im selben Verzeichnis wie den Brief ablegen. Unterstuetzte Formate: SVG, PNG, GIF, JPG. Die Datei muss `unterschrift.{ext}` heissen. SVG oder transparentes PNG empfohlen.
+Die Unterschrift-Datei im selben Verzeichnis wie den Brief ablegen. Unterstuetzte Formate: SVG, PNG, GIF, JPG. SVG oder transparentes PNG empfohlen.
 
 ## Lizenz
 

@@ -9,8 +9,8 @@ runner = CliRunner()
 
 
 def test_profile_creates_yaml_with_defaults(work_dir: Path) -> None:
-    # Press Enter for all prompts (accept defaults)
-    result = runner.invoke(app, ["profile"], input="\n" * 12)
+    # Press Enter for all prompts (accept defaults) — 13 prompts now (added accent)
+    result = runner.invoke(app, ["profile"], input="\n" * 13)
     assert result.exit_code == 0
     p = work_dir / "profile.yaml"
     assert p.exists()
@@ -19,6 +19,7 @@ def test_profile_creates_yaml_with_defaults(work_dir: Path) -> None:
     assert data["qr_code"] is True
     assert data["signature"] is None
     assert data["closing"] == "Mit freundlichem Gruß"
+    assert data["accent"] == "#B03060"
     assert "street" in data
     assert "zip" in data
     assert "city" in data
@@ -30,7 +31,7 @@ def test_profile_creates_yaml_with_defaults(work_dir: Path) -> None:
 
 
 def test_profile_creates_yaml_with_custom_values(work_dir: Path) -> None:
-    inputs = "Anna Weber\nLindenallee 12\n80331\nMuenchen\n089 123\nanna@example.de\nDE91 1234\nBFSWDE33\nTestbank\nja\nnull\nMit herzlichen Gruessen\n"
+    inputs = "Anna Weber\nLindenallee 12\n80331\nMuenchen\n089 123\nanna@example.de\nDE91 1234\nBFSWDE33\nTestbank\n#265282\nja\nnull\nMit herzlichen Gruessen\n"
     result = runner.invoke(app, ["profile"], input=inputs)
     assert result.exit_code == 0
     data = yaml.safe_load((work_dir / "profile.yaml").read_text())
@@ -40,7 +41,7 @@ def test_profile_creates_yaml_with_custom_values(work_dir: Path) -> None:
 
 
 def test_profile_no_quotes_on_zip(work_dir: Path) -> None:
-    result = runner.invoke(app, ["profile"], input="\n" * 12)
+    result = runner.invoke(app, ["profile"], input="\n" * 13)
     assert result.exit_code == 0
     raw = (work_dir / "profile.yaml").read_text()
     assert "zip: 12345" in raw

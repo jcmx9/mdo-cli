@@ -1,36 +1,15 @@
-import datetime
 import platform
 import subprocess
 from pathlib import Path
 
 import typer
 import yaml
+from pydantic import ValidationError
 
 from mdo.core.fonts import FONT_HELP_URL, check_fonts
 from mdo.core.markdown import md_to_typst
-from mdo.core.typst_builder import build_typst
-
-GERMAN_MONTHS = [
-    "Januar",
-    "Februar",
-    "März",
-    "April",
-    "Mai",
-    "Juni",
-    "Juli",
-    "August",
-    "September",
-    "Oktober",
-    "November",
-    "Dezember",
-]
-
-REQUIRED_FIELDS = {"name", "street", "zip", "city", "recipient", "closing"}
-
-
-def _format_german_date(d: datetime.date) -> str:
-    """Format date as '05. April 2026'."""
-    return f"{d.day:02d}. {GERMAN_MONTHS[d.month - 1]} {d.year}"
+from mdo.core.models import LetterData
+from mdo.core.typst_builder import build_typst_files
 
 
 def _parse_letter(path: Path) -> tuple[dict[str, object], str]:
@@ -44,11 +23,6 @@ def _parse_letter(path: Path) -> tuple[dict[str, object], str]:
     if not isinstance(fm, dict):
         typer.echo("Error: Invalid frontmatter in file", err=True)
         raise typer.Exit(1)
-    # Validate required fields
-    missing = REQUIRED_FIELDS - set(fm.keys())
-    if missing:
-        typer.echo(f"Error: Missing required fields: {', '.join(sorted(missing))}", err=True)
-        raise typer.Exit(1)
     body = parts[2].strip()
     return fm, body
 
@@ -59,7 +33,6 @@ def compile_letter(
     """Compile a letter .md to PDF/A-2b."""
     path = Path(filename)
 
-    # Must be a .md file
     if path.suffix != ".md":
         typer.echo(f"Error: Expected a .md file, got '{path.suffix}'", err=True)
         raise typer.Exit(1)
@@ -75,76 +48,50 @@ def compile_letter(
         typer.echo(f"Install static font variants. See requirements: {FONT_HELP_URL}", err=True)
         raise typer.Exit(1)
 
-    # Check typst is available
-    try:
-        subprocess.run(["typst", "--version"], capture_output=True, check=True)
-    except FileNotFoundError:
-        typer.echo("Error: typst not found. Install: https://typst.app", err=True)
-        raise typer.Exit(1)
+    # Check external tools
+    for tool, url in [("typst", "https://typst.app"), ("pandoc", "https://pandoc.org")]:
+        try:
+            subprocess.run([tool, "--version"], capture_output=True, check=True)
+        except FileNotFoundError:
+            typer.echo(f"Error: {tool} not found. Install: {url}", err=True)
+            raise typer.Exit(1)
 
-    # Parse
+    # Parse frontmatter + body
     fm, body = _parse_letter(path)
 
-    # Resolve date
-    date_val = fm.get("date")
-    if date_val is None:
-        date_str = _format_german_date(datetime.date.today())
-    else:
-        date_str = str(date_val)
-
-    # Resolve signature
-    signature_val = fm.get("signature")
-    signature_file: str | None = None
-    if signature_val:
-        sig_path = Path(str(signature_val))
-        if not sig_path.exists():
-            typer.echo(f"Error: Signature file not found: {signature_val}", err=True)
-            raise typer.Exit(1)
-        signature_file = str(signature_val)
-
-    # Convert body
-    typst_body = md_to_typst(body)
-
-    # Build sender dict
-    sender = {
-        "name": fm.get("name", ""),
-        "street": fm.get("street", ""),
-        "zip": fm.get("zip", ""),
-        "city": fm.get("city", ""),
-        "phone": fm.get("phone", ""),
-        "email": fm.get("email", ""),
-        "iban": fm.get("iban", ""),
-        "bic": fm.get("bic", ""),
-        "bank": fm.get("bank", ""),
-        "qr_code": fm.get("qr_code", False),
-    }
-
-    raw_recipient = fm.get("recipient", [])
-    recipient: list[str] = (
-        [str(r) for r in raw_recipient] if isinstance(raw_recipient, list) else []
-    )
-    if not recipient:
-        typer.echo("Error: recipient is empty. Add at least one address line.", err=True)
+    # Validate with Pydantic
+    try:
+        data = LetterData.model_validate(fm)
+    except ValidationError as e:
+        for err in e.errors():
+            field = ".".join(str(x) for x in err["loc"])
+            typer.echo(f"Error: {field}: {err['msg']}", err=True)
         raise typer.Exit(1)
-    subject = str(fm.get("subject", "") or "")
-    closing = str(fm.get("closing", "Mit freundlichem Gruß"))
 
-    # Generate .typ
-    typ_content = build_typst(
-        sender=sender,
-        recipient=recipient,
-        date=date_str,
-        subject=subject or "",
-        body=typst_body,
-        closing=closing,
-        signature=signature_file,
-    )
+    # Signature file check
+    if data.signature:
+        sig_path = Path(data.signature)
+        if not sig_path.exists():
+            typer.echo(f"Error: Signature file not found: {data.signature}", err=True)
+            raise typer.Exit(1)
+
+    # Convert body via Pandoc
+    try:
+        typst_body = md_to_typst(body)
+    except RuntimeError as e:
+        typer.echo(f"Error: {e}", err=True)
+        raise typer.Exit(1)
+
+    # Build .typ + .json
+    typ_content, json_content = build_typst_files(data=data, body=typst_body)
 
     typ_path = path.with_suffix(".typ")
+    json_path = path.with_name("brief.json")
     pdf_path = path.with_suffix(".pdf")
 
     try:
         typ_path.write_text(typ_content, encoding="utf-8")
+        json_path.write_text(json_content, encoding="utf-8")
 
         result = subprocess.run(
             ["typst", "compile", "--pdf-standard", "a-2b", str(typ_path), str(pdf_path)],
@@ -159,14 +106,15 @@ def compile_letter(
 
         typer.echo(f"Created {pdf_path}")
 
-        # Post-compile actions from frontmatter
-        if fm.get("open"):
+        if data.open:
             _open_file(pdf_path)
-        if fm.get("reveal"):
+        if data.reveal:
             _reveal_file(pdf_path)
     finally:
         if typ_path.exists():
             typ_path.unlink()
+        if json_path.exists():
+            json_path.unlink()
 
 
 def _open_file(path: Path) -> None:

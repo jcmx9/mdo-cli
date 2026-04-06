@@ -1,55 +1,46 @@
+import json
+
+from mdo.core.models import LetterData
 from mdo.core.paths import find_installed_version
 
 
-def _esc(value: object) -> str:
-    """Escape a value for use inside a Typst string literal."""
-    return str(value).replace("\\", "\\\\").replace('"', '\\"')
+def build_typst_files(*, data: LetterData, body: str) -> tuple[str, str]:
+    """Generate .typ content and .json content for a letter.
 
-
-def build_typst(
-    *,
-    sender: dict[str, object],
-    recipient: list[str],
-    date: str,
-    subject: str,
-    body: str,
-    closing: str,
-    signature: str | None,
-) -> str:
-    """Generate a complete .typ file for din5008a."""
+    Returns:
+        (typ_content, json_content) tuple.
+    """
     version = find_installed_version()
-    qr = "true" if sender.get("qr_code") else "false"
-    city_combined = f"{sender['zip']} {sender['city']}".strip()
-    recipient_str = ", ".join(f'"{_esc(line)}"' for line in recipient)
 
-    typ = f'''#import "@local/din5008a:{version}": din5008a, bullet
+    json_data: dict[str, object] = {
+        "sender": data.sender_dict(),
+        "recipient": data.recipient,
+        "date": data.date,
+        "subject": data.subject,
+        "closing": data.closing,
+        "signature": data.signature,
+        "accent": data.accent,
+        "attachments": data.attachments,
+    }
+    json_content = json.dumps(json_data, ensure_ascii=False, indent=2)
+
+    typ_content = f"""\
+#import "@local/din5008a:{version}": din5008a, bullet
+#let data = json("brief.json")
+#let sig = if data.signature != none {{ image(data.signature, width: 40mm) }} else {{ none }}
 
 #show: din5008a.with(
-  sender: (
-    name: "{_esc(sender["name"])}",
-    street: "{_esc(sender["street"])}",
-    city: "{_esc(city_combined)}",
-    phone: "{_esc(sender["phone"])}",
-    email: "{_esc(sender["email"])}",
-    iban: "{_esc(sender["iban"])}",
-    bic: "{_esc(sender["bic"])}",
-    bank: "{_esc(sender["bank"])}",
-    qr: {qr},
-  ),
-  recipient: ({recipient_str}),
-  date: "{_esc(date)}",
-  subject: "{_esc(subject)}",
+  sender: data.sender,
+  recipient: data.recipient,
+  date: data.date,
+  subject: data.subject,
+  closing: data.closing,
+  signature: sig,
+  accent: rgb(data.accent),
+  attachments: data.at("attachments", default: ()),
 )
 
 {body}
+"""
 
-{closing}
-
-'''
-
-    if signature:
-        typ += f'#image("{_esc(signature)}", width: 40mm)\n\n'
-
-    typ += f"{sender['name']}\n"
-
-    return typ
+    return typ_content, json_content

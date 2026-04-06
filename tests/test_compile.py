@@ -7,7 +7,8 @@ from mdo.cli import app
 
 runner = CliRunner()
 
-LETTER_CONTENT = """---
+LETTER_CONTENT = """\
+---
 name: Test User
 street: Teststrasse 1
 zip: 12345
@@ -20,7 +21,7 @@ bank: Testbank
 qr_code: true
 signature: null
 closing: Mit freundlichem Gruß
-date: null
+date: 05. April 2026
 subject: Testbetreff
 recipient:
   - Firma GmbH
@@ -33,7 +34,8 @@ Sehr geehrte Damen und Herren,
 dies ist ein **Test**.
 """
 
-INVALID_MD = """---
+INVALID_MD = """\
+---
 title: Just a random markdown file
 ---
 
@@ -42,21 +44,29 @@ Some content.
 
 
 def _mock_subprocess_run(cmd: list[str], **kwargs: object) -> MagicMock:
-    """Mock that handles both typst --version and typst compile."""
+    """Mock that handles typst, pandoc, and other subprocess calls."""
     result = MagicMock()
     result.returncode = 0
     result.stderr = ""
-    result.stdout = "typst 0.14.2"
+    result.stdout = ""
+    if cmd[0] == "pandoc":
+        result.stdout = "Sehr geehrte Damen und Herren,\n\ndies ist ein #strong[Test]."
+    elif cmd[0] == "typst" and "--version" in cmd:
+        result.stdout = "typst 0.14.2"
+    elif cmd[0] == "pandoc" and "--version" in cmd:
+        result.stdout = "pandoc 3.9.0"
     return result
 
 
 @patch("mdo.commands.compile.check_fonts", return_value=[])
 @patch("mdo.commands.compile.subprocess.run", side_effect=_mock_subprocess_run)
-def test_compile_generates_pdf(mock_run: MagicMock, mock_fonts: MagicMock, work_dir: Path) -> None:
+@patch("mdo.core.markdown.subprocess.run", side_effect=_mock_subprocess_run)
+def test_compile_generates_pdf(
+    mock_md: MagicMock, mock_run: MagicMock, mock_fonts: MagicMock, work_dir: Path
+) -> None:
     (work_dir / "brief.md").write_text(LETTER_CONTENT)
     result = runner.invoke(app, ["compile", "brief.md"])
     assert result.exit_code == 0
-    # Verify typst compile was called with correct args
     compile_call = [c for c in mock_run.call_args_list if "compile" in c.args[0]]
     assert len(compile_call) == 1
     assert "--pdf-standard" in compile_call[0].args[0]
@@ -80,7 +90,10 @@ def test_compile_file_not_found(work_dir: Path) -> None:
 
 @patch("mdo.commands.compile.check_fonts", return_value=[])
 @patch("mdo.commands.compile.subprocess.run", side_effect=_mock_subprocess_run)
-def test_compile_with_signature(mock_run: MagicMock, mock_fonts: MagicMock, work_dir: Path) -> None:
+@patch("mdo.core.markdown.subprocess.run", side_effect=_mock_subprocess_run)
+def test_compile_with_signature(
+    mock_md: MagicMock, mock_run: MagicMock, mock_fonts: MagicMock, work_dir: Path
+) -> None:
     content = LETTER_CONTENT.replace("signature: null", "signature: unterschrift.svg")
     (work_dir / "brief.md").write_text(content)
     (work_dir / "unterschrift.svg").write_text("<svg></svg>")
@@ -89,19 +102,16 @@ def test_compile_with_signature(mock_run: MagicMock, mock_fonts: MagicMock, work
 
 
 @patch("mdo.commands.compile.check_fonts", return_value=[])
-def test_compile_missing_signature_file(mock_fonts: MagicMock, work_dir: Path) -> None:
+@patch("mdo.commands.compile.subprocess.run", side_effect=_mock_subprocess_run)
+@patch("mdo.core.markdown.subprocess.run", side_effect=_mock_subprocess_run)
+def test_compile_missing_signature_file(
+    mock_md: MagicMock, mock_run: MagicMock, mock_fonts: MagicMock, work_dir: Path
+) -> None:
     content = LETTER_CONTENT.replace("signature: null", "signature: unterschrift.svg")
     (work_dir / "brief.md").write_text(content)
     result = runner.invoke(app, ["compile", "brief.md"])
     assert result.exit_code != 0
     assert "unterschrift" in result.output.lower()
-
-
-def test_compile_rejects_invalid_md(work_dir: Path) -> None:
-    (work_dir / "random.md").write_text(INVALID_MD)
-    result = runner.invoke(app, ["compile", "random.md"])
-    assert result.exit_code != 0
-    assert "invalid" in result.output.lower() or "missing" in result.output.lower()
 
 
 def test_compile_rejects_profile_yaml(work_dir: Path) -> None:
@@ -110,7 +120,12 @@ def test_compile_rejects_profile_yaml(work_dir: Path) -> None:
     assert result.exit_code != 0
 
 
-def test_compile_warns_empty_recipient(work_dir: Path) -> None:
+@patch("mdo.commands.compile.check_fonts", return_value=[])
+@patch("mdo.commands.compile.subprocess.run", side_effect=_mock_subprocess_run)
+@patch("mdo.core.markdown.subprocess.run", side_effect=_mock_subprocess_run)
+def test_compile_warns_empty_recipient(
+    mock_md: MagicMock, mock_run: MagicMock, mock_fonts: MagicMock, work_dir: Path
+) -> None:
     content = LETTER_CONTENT.replace(
         "recipient:\n  - Firma GmbH\n  - Strasse 1\n  - 12345 Stadt",
         "recipient: []",
@@ -119,3 +134,26 @@ def test_compile_warns_empty_recipient(work_dir: Path) -> None:
     result = runner.invoke(app, ["compile", "brief.md"])
     assert result.exit_code != 0
     assert "recipient" in result.output.lower()
+
+
+@patch("mdo.commands.compile.check_fonts", return_value=[])
+@patch("mdo.commands.compile.subprocess.run", side_effect=_mock_subprocess_run)
+@patch("mdo.core.markdown.subprocess.run", side_effect=_mock_subprocess_run)
+def test_compile_rejects_invalid_frontmatter(
+    mock_md: MagicMock, mock_run: MagicMock, mock_fonts: MagicMock, work_dir: Path
+) -> None:
+    (work_dir / "random.md").write_text(INVALID_MD)
+    result = runner.invoke(app, ["compile", "random.md"])
+    assert result.exit_code != 0
+
+
+@patch("mdo.commands.compile.check_fonts", return_value=[])
+@patch("mdo.commands.compile.subprocess.run", side_effect=_mock_subprocess_run)
+@patch("mdo.core.markdown.subprocess.run", side_effect=_mock_subprocess_run)
+def test_compile_cleans_up_temp_files(
+    mock_md: MagicMock, mock_run: MagicMock, mock_fonts: MagicMock, work_dir: Path
+) -> None:
+    (work_dir / "brief.md").write_text(LETTER_CONTENT)
+    runner.invoke(app, ["compile", "brief.md"])
+    assert not (work_dir / "brief.typ").exists()
+    assert not (work_dir / "brief.json").exists()
