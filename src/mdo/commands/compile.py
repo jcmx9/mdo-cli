@@ -163,7 +163,7 @@ def compile_letter(
             typer.echo(f"Error: typst compile failed:\n{result.stderr}", err=True)
             raise typer.Exit(1)
 
-        # Rename .md and .pdf to YYYY-MM-DD_recipient - subject
+        # Rename .md, .pdf, and .typ to YYYY-MM-DD_recipient - subject
         final_name = _build_filename(data)
         if final_name and pdf_path.exists():
             try:
@@ -173,6 +173,10 @@ def compile_letter(
                     path.rename(final_md)
                 pdf_path.rename(final_pdf)
                 pdf_path = final_pdf
+                if typ and typ_path.exists():
+                    final_typ = path.parent / f"{final_name}.typ"
+                    typ_path.rename(final_typ)
+                    typ_path = final_typ
             except OSError:
                 pass
         typer.echo(f"Created {pdf_path}")
