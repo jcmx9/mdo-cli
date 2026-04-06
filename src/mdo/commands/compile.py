@@ -1,4 +1,5 @@
 import platform
+import re
 import subprocess
 from pathlib import Path
 
@@ -10,6 +11,50 @@ from mdo.core.fonts import FONT_HELP_URL, check_fonts
 from mdo.core.markdown import md_to_typst
 from mdo.core.models import LetterData
 from mdo.core.typst_builder import build_typst_files
+
+
+GERMAN_MONTHS = {
+    "Januar": "01",
+    "Februar": "02",
+    "März": "03",
+    "April": "04",
+    "Mai": "05",
+    "Juni": "06",
+    "Juli": "07",
+    "August": "08",
+    "September": "09",
+    "Oktober": "10",
+    "November": "11",
+    "Dezember": "12",
+}
+
+
+def _sanitize(text: str) -> str:
+    """Remove characters that are problematic in filenames."""
+    return re.sub(r'[/\\:*?"<>|]', "", text).strip()
+
+
+def _build_filename(data: LetterData) -> str | None:
+    """Build filename as YYYY-MM-DD_recipient - subject."""
+    if not data.date or not data.recipient or not data.subject:
+        return None
+
+    # Parse German date "05. April 2026" → "2026-04-05"
+    m = re.match(r"(\d{2})\.\s+(\S+)\s+(\d{4})", data.date)
+    if m:
+        day, month_name, year = m.group(1), m.group(2), m.group(3)
+        month = GERMAN_MONTHS.get(month_name, "01")
+        date_str = f"{year}-{month}-{day}"
+    else:
+        date_str = data.date
+
+    recipient = _sanitize(data.recipient[0])
+    subject = _sanitize(data.subject)
+
+    if not recipient or not subject:
+        return None
+
+    return f"{date_str}_{recipient} - {subject}"
 
 
 def _parse_letter(path: Path) -> tuple[dict[str, object], str]:
@@ -110,6 +155,18 @@ def compile_letter(
             typer.echo(f"Error: typst compile failed:\n{result.stderr}", err=True)
             raise typer.Exit(1)
 
+        # Rename .md and .pdf to YYYY-MM-DD_recipient - subject
+        final_name = _build_filename(data)
+        if final_name and pdf_path.exists():
+            try:
+                final_md = path.parent / f"{final_name}.md"
+                final_pdf = path.parent / f"{final_name}.pdf"
+                if final_md != path:
+                    path.rename(final_md)
+                pdf_path.rename(final_pdf)
+                pdf_path = final_pdf
+            except OSError:
+                pass
         typer.echo(f"Created {pdf_path}")
 
         if data.open:
