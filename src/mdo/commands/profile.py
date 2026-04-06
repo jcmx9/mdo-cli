@@ -52,7 +52,8 @@ def profile() -> None:
     # Non-interactive fields with sensible defaults
     qr_input = typer.prompt("  vCard QR-Code anzeigen (ja/nein)", default="ja")
     data["qr_code"] = qr_input.lower() in ("ja", "j", "yes", "y", "true")
-    data["signature"] = None
+    sig_input = typer.prompt("  Unterschrift verwenden (ja/nein)", default="ja")
+    data["signature"] = sig_input.lower() in ("ja", "j", "yes", "y", "true")
     closing = typer.prompt("  Schlussgruss", default="Mit freundlichem Gruß")
     data["closing"] = closing
     data["open"] = True

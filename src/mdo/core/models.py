@@ -38,7 +38,7 @@ class LetterData(BaseModel):
     bic: str = ""
     bank: str = ""
     qr_code: bool = False
-    signature: str | None = None
+    signature: str | bool | None = None
     closing: str = "Mit freundlichem Gruß"
 
     # Letter

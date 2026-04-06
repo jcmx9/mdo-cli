@@ -68,12 +68,18 @@ def compile_letter(
             typer.echo(f"Error: {field}: {err['msg']}", err=True)
         raise typer.Exit(1)
 
-    # Signature file check
-    if data.signature:
-        sig_path = Path(data.signature)
-        if not sig_path.exists():
-            typer.echo(f"Error: Signature file not found: {data.signature}", err=True)
-            raise typer.Exit(1)
+    # Signature: resolve boolean/string to actual file
+    if data.signature is True:
+        found = None
+        for ext in ("svg", "png", "jpg", "gif"):
+            candidate = path.parent / f"unterschrift.{ext}"
+            if candidate.exists():
+                found = str(candidate.name)
+                break
+        data.signature = found
+    elif data.signature and not Path(data.signature).exists():
+        typer.echo(f"Error: Signature file not found: {data.signature}", err=True)
+        raise typer.Exit(1)
 
     # Convert body via Pandoc
     try:

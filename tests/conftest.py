@@ -22,7 +22,7 @@ def profile_data() -> dict[str, object]:
         "bic": "COBADEFFXXX",
         "bank": "Testbank",
         "qr_code": True,
-        "signature": None,
+        "signature": True,
         "closing": "Mit freundlichem Gruß",
         "accent": "#B03060",
     }
@@ -39,7 +39,7 @@ iban: DE89 3704 0044 0532 0130 00
 bic: COBADEFFXXX
 bank: Testbank
 qr_code: true
-signature: null
+signature: true
 closing: Mit freundlichem Gruß
 accent: "#B03060"
 """

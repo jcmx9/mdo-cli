@@ -17,7 +17,7 @@ def test_profile_creates_yaml_with_defaults(work_dir: Path) -> None:
     data = yaml.safe_load(p.read_text())
     assert data["name"] == "Max Mustermann"
     assert data["qr_code"] is True
-    assert data["signature"] is None
+    assert data["signature"] is True
     assert data["closing"] == "Mit freundlichem Gruß"
     assert data["accent"] == "#B03060"
     assert "street" in data
@@ -31,7 +31,7 @@ def test_profile_creates_yaml_with_defaults(work_dir: Path) -> None:
 
 
 def test_profile_creates_yaml_with_custom_values(work_dir: Path) -> None:
-    inputs = "Anna Weber\nLindenallee 12\n80331\nMuenchen\n089 123\nanna@example.de\nDE91 1234\nBFSWDE33\nTestbank\n#265282\nja\nnull\nMit herzlichen Gruessen\n"
+    inputs = "Anna Weber\nLindenallee 12\n80331\nMuenchen\n089 123\nanna@example.de\nDE91 1234\nBFSWDE33\nTestbank\n#265282\nja\nunterschrift.svg\nMit herzlichen Gruessen\n"
     result = runner.invoke(app, ["profile"], input=inputs)
     assert result.exit_code == 0
     data = yaml.safe_load((work_dir / "profile.yaml").read_text())
