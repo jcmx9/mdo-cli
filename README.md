@@ -22,18 +22,6 @@ brew install typst
 brew install pandoc
 ```
 
-### Required Fonts
-
-Install the **static** (not variable) variants of these fonts as system fonts:
-
-- [Source Serif 4](https://github.com/adobe-fonts/source-serif/releases) -- body text
-- [Source Sans 3](https://github.com/adobe-fonts/source-sans/releases) -- header, footer, UI elements
-- [Source Code Pro](https://github.com/adobe-fonts/source-code-pro/releases) -- code blocks, tables
-
-Download the latest release of each, install the files from the `TTF/` or `OTF/` **static** folder.
-
-> **Important:** Use the static font files, not the variable ones. Typst requires static font variants.
-
 ### din5008a Template
 
 Install or update the Typst template with:
@@ -213,18 +201,6 @@ brew install typst
 # Pandoc (Dokumenten-Konverter)
 brew install pandoc
 ```
-
-### Benoetigte Schriften
-
-Die **statischen** (nicht variablen) Varianten dieser Schriften als Systemschriften installieren:
-
-- [Source Serif 4](https://github.com/adobe-fonts/source-serif/releases) -- Fliesstext
-- [Source Sans 3](https://github.com/adobe-fonts/source-sans/releases) -- Kopf-/Fusszeile, UI-Elemente
-- [Source Code Pro](https://github.com/adobe-fonts/source-code-pro/releases) -- Code, Tabellen
-
-Jeweils den neuesten Release herunterladen und die Dateien aus dem `TTF/`- oder `OTF/`-**static**-Ordner installieren.
-
-> **Wichtig:** Die statischen Schriftdateien verwenden, nicht die variablen. Typst benoetigt statische Varianten.
 
 ### din5008a-Template
 
