@@ -60,19 +60,72 @@ uv tool install git+https://github.com/jcmx9/mdo-cli.git
 ## Quick Start
 
 ```bash
-# 1. Create a sender profile
+# 1. Install the Typst template
+mdo update
+
+# 2. Create a sender profile (interactive wizard)
 mdo profile
+```
 
-# 2. Optional: add a signature image (unterschrift.svg or .png recommended)
+The wizard prompts for name, address, contact, bank details, accent color, and more.
+Result: `profile.yaml` in the current directory.
 
+```yaml
+# profile.yaml (example)
+name: Max Mustermann
+street: Musterstrasse 1
+zip: 12345
+city: Musterstadt
+phone: 0123 456789
+email: max@example.de
+iban: DE89 3704 0044 0532 0130 00
+bic: COBADEFFXXX
+bank: Commerzbank
+accent: "#B03060"
+qr_code: true
+signature: unterschrift.svg
+closing: Mit freundlichem Gruss
+open: true
+reveal: true
+```
+
+```bash
 # 3. Create a new letter
 mdo new
-
-# 4. Edit the generated .md file (frontmatter + body)
-
-# 5. Compile to PDF/A
-mdo compile 2026-04-05_Brief01.md
 ```
+
+Generates a `.md` file (e.g. `2026-04-06_Brief01.md`) with frontmatter from your profile:
+
+```markdown
+---
+name: Max Mustermann
+street: Musterstrasse 1
+zip: 12345
+city: Musterstadt
+...
+date: null  # YYYY-MM-DD (null = today)
+subject: null
+recipient:
+  - Firma GmbH
+  - Frau / Herrn Vorname Nachname
+  - Strasse Nr.
+  - PLZ Ort
+attachments: []
+---
+
+Sehr geehrte Damen und Herren,
+
+
+```
+
+Edit the file: fill in `subject`, `recipient`, `date`, `attachments`, and write your letter body in Markdown.
+
+```bash
+# 4. Compile to PDF/A
+mdo compile 2026-04-06_Brief01.md
+```
+
+Pipeline: Markdown body → Pandoc → Typst markup, frontmatter → JSON, both combined with din5008a template → PDF/A-2b.
 
 ## Printing
 
@@ -199,19 +252,72 @@ uv tool install git+https://github.com/jcmx9/mdo-cli.git
 ## Schnellstart
 
 ```bash
-# 1. Absenderprofil anlegen
+# 1. Typst-Template installieren
+mdo update
+
+# 2. Absenderprofil anlegen (interaktiver Wizard)
 mdo profile
+```
 
-# 2. Optional: Unterschrift-Bild hinzufuegen (unterschrift.svg oder .png empfohlen)
+Der Wizard fragt Name, Adresse, Kontakt, Bankdaten, Akzentfarbe und mehr ab.
+Ergebnis: `profile.yaml` im aktuellen Verzeichnis.
 
+```yaml
+# profile.yaml (Beispiel)
+name: Max Mustermann
+street: Musterstrasse 1
+zip: 12345
+city: Musterstadt
+phone: 0123 456789
+email: max@example.de
+iban: DE89 3704 0044 0532 0130 00
+bic: COBADEFFXXX
+bank: Commerzbank
+accent: "#B03060"
+qr_code: true
+signature: unterschrift.svg
+closing: Mit freundlichem Gruss
+open: true
+reveal: true
+```
+
+```bash
 # 3. Neuen Brief anlegen
 mdo new
-
-# 4. Die erzeugte .md-Datei bearbeiten (Frontmatter + Brieftext)
-
-# 5. Als PDF/A kompilieren
-mdo compile 2026-04-05_Brief01.md
 ```
+
+Erzeugt eine `.md`-Datei (z.B. `2026-04-06_Brief01.md`) mit Frontmatter aus dem Profil:
+
+```markdown
+---
+name: Max Mustermann
+street: Musterstrasse 1
+zip: 12345
+city: Musterstadt
+...
+date: null  # JJJJ-MM-TT (null = heute)
+subject: null
+recipient:
+  - Firma GmbH
+  - Frau / Herrn Vorname Nachname
+  - Strasse Nr.
+  - PLZ Ort
+attachments: []
+---
+
+Sehr geehrte Damen und Herren,
+
+
+```
+
+Datei bearbeiten: `subject`, `recipient`, `date`, `attachments` ausfuellen und Brieftext in Markdown schreiben.
+
+```bash
+# 4. Als PDF/A kompilieren
+mdo compile 2026-04-06_Brief01.md
+```
+
+Pipeline: Markdown-Body → Pandoc → Typst-Markup, Frontmatter → JSON, beides mit din5008a-Template → PDF/A-2b.
 
 ## Drucken
 
