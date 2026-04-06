@@ -22,6 +22,8 @@ def test_update_installs_template(mock_run: MagicMock, mock_dir: MagicMock, tmp_
         src_dir.mkdir()
         (src_dir / "lib.typ").write_text("// template")
         (repo_dir / "typst.toml").write_text('[package]\nversion = "0.2.0"\n')
+        (repo_dir / "version.typ").write_text('#let version = "0.2.0"')
+        (repo_dir / ".git").mkdir()  # excluded from copy
         result = MagicMock()
         result.returncode = 0
         return result
@@ -35,6 +37,8 @@ def test_update_installs_template(mock_run: MagicMock, mock_dir: MagicMock, tmp_
     installed = tmp_path / "packages" / "din5008a" / "0.2.0"
     assert (installed / "src" / "lib.typ").exists()
     assert (installed / "typst.toml").exists()
+    assert (installed / "version.typ").exists()
+    assert not (installed / ".git").exists()
 
 
 @patch("mdo.commands.update.subprocess.run", side_effect=FileNotFoundError)

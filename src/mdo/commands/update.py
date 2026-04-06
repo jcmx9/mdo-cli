@@ -49,15 +49,16 @@ def update() -> None:
         target = typst_packages_dir() / PACKAGE_NAME / version
         target.mkdir(parents=True, exist_ok=True)
 
-        # Copy src/ directory (preserving structure for entrypoint "src/lib.typ")
-        src_dir = tmp_path / "src"
-        if not src_dir.exists():
-            typer.echo("Error: src/ directory not found in template repo", err=True)
-            raise typer.Exit(1)
-
-        shutil.copytree(src_dir, target / "src", dirs_exist_ok=True)
-
-        toml_src = tmp_path / "typst.toml"
-        shutil.copy2(toml_src, target / "typst.toml")
+        # Copy all package files (src/, typst.toml, version.typ, etc.)
+        # Exclude git metadata and non-package directories
+        exclude = {".git", ".github", "docs", "tests", "scripts", "template"}
+        for item in tmp_path.iterdir():
+            if item.name in exclude:
+                continue
+            dest = target / item.name
+            if item.is_dir():
+                shutil.copytree(item, dest, dirs_exist_ok=True)
+            else:
+                shutil.copy2(item, dest)
 
         typer.echo(f"Installed {PACKAGE_NAME} v{version} to {target}")
