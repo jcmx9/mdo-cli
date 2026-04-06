@@ -48,10 +48,13 @@ uv tool install git+https://github.com/jcmx9/mdo-cli.git
 ## Quick Start
 
 ```bash
-# 1. Install the Typst template
+# 1. Install required fonts (static variants, isolated from system fonts)
+mdo install-fonts
+
+# 2. Install the Typst template
 mdo update
 
-# 2. Create a sender profile (interactive wizard)
+# 3. Create a sender profile (interactive wizard)
 mdo profile
 ```
 
@@ -78,7 +81,7 @@ reveal: true  # PDF im Dateimanager anzeigen
 ```
 
 ```bash
-# 3. Create a new letter
+# 4. Create a new letter
 mdo new
 ```
 
@@ -112,7 +115,7 @@ Sehr geehrte Damen und Herren,
 Edit the file: fill in `subject`, `recipient`, `date`, `attachments`, and write your letter body in Markdown.
 
 ```bash
-# 4. Compile to PDF/A
+# 5. Compile to PDF/A
 mdo compile 2026-04-06_Brief01.md
 ```
 
@@ -139,6 +142,10 @@ Compiles a letter `.md` to PDF/A-2b via Pandoc and Typst. Checks for required fo
 ### `mdo update`
 
 Downloads/updates the din5008a Typst template to the local packages directory.
+
+### `mdo install-fonts`
+
+Downloads the required static font families (Source Serif 4, Source Sans 3, Source Code Pro) to `~/.local/share/mdo/fonts/`. These fonts are isolated from system fonts and passed to Typst via `--font-path` automatically during compile. See [din5008a requirements](https://github.com/jcmx9/typst-DIN5008a#requirements) for details.
 
 ## Field Reference
 
@@ -231,10 +238,13 @@ uv tool install git+https://github.com/jcmx9/mdo-cli.git
 ## Schnellstart
 
 ```bash
-# 1. Typst-Template installieren
+# 1. Benoetigte Schriften installieren (statische Varianten, isoliert von Systemschriften)
+mdo install-fonts
+
+# 2. Typst-Template installieren
 mdo update
 
-# 2. Absenderprofil anlegen (interaktiver Wizard)
+# 3. Absenderprofil anlegen (interaktiver Wizard)
 mdo profile
 ```
 
@@ -261,7 +271,7 @@ reveal: true  # PDF im Dateimanager anzeigen
 ```
 
 ```bash
-# 3. Neuen Brief anlegen
+# 4. Neuen Brief anlegen
 mdo new
 ```
 
@@ -295,7 +305,7 @@ Sehr geehrte Damen und Herren,
 Datei bearbeiten: `subject`, `recipient`, `date`, `attachments` ausfuellen und Brieftext in Markdown schreiben.
 
 ```bash
-# 4. Als PDF/A kompilieren
+# 5. Als PDF/A kompilieren
 mdo compile 2026-04-06_Brief01.md
 ```
 
@@ -322,6 +332,10 @@ Kompiliert eine Brief-`.md` zu PDF/A-2b via Pandoc und Typst. Prueft vorher, ob 
 ### `mdo update`
 
 Laedt das din5008a Typst-Template herunter oder aktualisiert es.
+
+### `mdo install-fonts`
+
+Laedt die benoetigten statischen Schriften (Source Serif 4, Source Sans 3, Source Code Pro) nach `~/.local/share/mdo/fonts/` herunter. Die Schriften sind von Systemschriften isoliert und werden beim Kompilieren automatisch via `--font-path` an Typst uebergeben. Siehe [din5008a-Anforderungen](https://github.com/jcmx9/typst-DIN5008a#requirements).
 
 ## Feldreferenz
 
