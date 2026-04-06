@@ -4,6 +4,7 @@ import typer
 
 from mdo import __version__
 from mdo.commands.compile import compile_letter
+from mdo.commands.install_fonts import install_fonts
 from mdo.commands.new import new
 from mdo.commands.profile import profile
 from mdo.commands.update import update
@@ -36,6 +37,7 @@ def main(
 
 
 app.command("compile")(compile_letter)
+app.command("install-fonts")(install_fonts)
 app.command()(new)
 app.command()(profile)
 app.command()(update)
