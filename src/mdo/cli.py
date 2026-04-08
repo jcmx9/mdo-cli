@@ -31,6 +31,7 @@ def _markdown_callback(value: bool) -> None:
             "  Kursiv          *text*\n"
             "  Aufzählung      - Punkt\n"
             "  Nummerierung    1. Punkt\n"
+            "  Monospace        `text`\n"
             "  Zeilenumbruch   \\ am Zeilenende\n"
             "  Trennlinie      ---\n"
         )
