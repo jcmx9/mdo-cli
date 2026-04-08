@@ -32,6 +32,7 @@ def _markdown_callback(value: bool) -> None:
             "  Aufzählung      - Punkt\n"
             "  Nummerierung    1. Punkt\n"
             "  Monospace        `text`\n"
+            "  Codeblock       ```text```\n"
             "  Zeilenumbruch   \\ am Zeilenende\n"
             "  Trennlinie      ---\n"
         )
