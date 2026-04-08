@@ -29,7 +29,6 @@ def _markdown_callback(value: bool) -> None:
             "\n"
             "  Fett            **text**\n"
             "  Kursiv          *text*\n"
-            "  Unterstrichen   [text]{.underline}\n"
             "  Aufzählung      - Punkt\n"
             "  Nummerierung    1. Punkt\n"
             "  Zeilenumbruch   \\ am Zeilenende\n"
