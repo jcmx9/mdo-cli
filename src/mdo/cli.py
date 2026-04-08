@@ -22,6 +22,23 @@ def _version_callback(value: bool) -> None:
         raise typer.Exit
 
 
+def _markdown_callback(value: bool) -> None:
+    if value:
+        table = (
+            "Markdown Cheatsheet\n"
+            "\n"
+            "  Fett            **text**\n"
+            "  Kursiv          *text*\n"
+            "  Unterstrichen   [text]{.underline}\n"
+            "  Aufzählung      - Punkt\n"
+            "  Nummerierung    1. Punkt\n"
+            "  Zeilenumbruch   \\ am Zeilenende\n"
+            "  Trennlinie      ---\n"
+        )
+        typer.echo(table)
+        raise typer.Exit
+
+
 @app.callback()
 def main(
     version: Optional[bool] = typer.Option(  # noqa: UP007
@@ -30,6 +47,13 @@ def main(
         "-V",
         help="Show version and exit.",
         callback=_version_callback,
+        is_eager=True,
+    ),
+    markdown: Optional[bool] = typer.Option(  # noqa: UP007
+        None,
+        "--markdown",
+        help="Show Markdown cheatsheet and exit.",
+        callback=_markdown_callback,
         is_eager=True,
     ),
 ) -> None:
