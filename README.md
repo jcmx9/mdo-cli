@@ -45,6 +45,12 @@ cp typst-DIN5008a/typst.toml ~/.local/share/typst/packages/local/din5008a/0.1.1/
 uv tool install git+https://github.com/jcmx9/mdo-cli.git
 ```
 
+## Update
+
+```bash
+uv tool install --force git+https://github.com/jcmx9/mdo-cli.git
+```
+
 ## Quick Start
 
 ```bash
@@ -73,6 +79,7 @@ iban: DE89 3704 0044 0532 0130 00  # Bank-IBAN
 bic: COBADEFFXXX  # Bank-BIC
 bank: Commerzbank  # Bankname
 accent: null  # Akzentfarbe als Hex (null = Template-Standard)
+signature_width: null  # Unterschrift-Breite in mm (null = Template-Standard 30pt)
 qr_code: true  # vCard-QR-Code im Infoblock anzeigen
 signature: true  # Unterschrift-Datei automatisch suchen
 closing: Mit freundlichem Gruss  # Schlussgruss
@@ -133,7 +140,7 @@ Interactive wizard to create `profile.yaml` in the current directory.
 
 ### `mdo new [FILENAME]`
 
-Creates a letter `.md` with frontmatter from `profile.yaml`. Without `FILENAME`, auto-generates `YYYY-MM-DD_BriefCC.md` (collision-safe counter).
+Interactively prompts for subject, date, and recipient, then creates a letter `.md` with frontmatter from `profile.yaml`. Without `FILENAME`, auto-generates `YYYY-MM-DD_BriefCC.md` (collision-safe counter). Use `--silent` / `-s` to skip prompts and use defaults.
 
 ### `mdo compile FILENAME.md`
 
@@ -164,6 +171,7 @@ Downloads the required static font families (Source Serif 4, Source Sans 3, Sour
 | `bank` | string | Bank name |
 | `qr_code` | boolean | Show vCard QR code |
 | `signature` | boolean | Auto-detect signature file (unterschrift.svg/png/jpg/gif) |
+| `signature_width` | int/null | Signature width in mm (`null` = template default 30pt) |
 | `closing` | string | Closing line (e.g. "Mit freundlichem Gruss") |
 | `accent` | string/null | Accent color as hex (e.g. `"#B03060"`, `null` = template default) |
 | `open` | boolean | Open PDF after compile |
@@ -181,6 +189,17 @@ Downloads the required static font families (Source Serif 4, Source Sans 3, Sour
 ### Signature
 
 Place the signature image in the same directory as the letter. Supported formats: SVG, PNG, GIF, JPG. SVG or transparent PNG recommended.
+
+## Development
+
+```bash
+git clone git@github.com:jcmx9/mdo-cli.git
+cd mdo-cli
+uv venv && source .venv/bin/activate && uv sync --all-extras
+pytest --cov=src -n auto
+ruff check --fix . && ruff format .
+mypy src/
+```
 
 ## License
 
@@ -235,6 +254,12 @@ cp typst-DIN5008a/typst.toml ~/.local/share/typst/packages/local/din5008a/0.1.1/
 uv tool install git+https://github.com/jcmx9/mdo-cli.git
 ```
 
+## Aktualisieren
+
+```bash
+uv tool install --force git+https://github.com/jcmx9/mdo-cli.git
+```
+
 ## Schnellstart
 
 ```bash
@@ -263,6 +288,7 @@ iban: DE89 3704 0044 0532 0130 00  # Bank-IBAN
 bic: COBADEFFXXX  # Bank-BIC
 bank: Commerzbank  # Bankname
 accent: null  # Akzentfarbe als Hex (null = Template-Standard)
+signature_width: null  # Unterschrift-Breite in mm (null = Template-Standard 30pt)
 qr_code: true  # vCard-QR-Code im Infoblock anzeigen
 signature: true  # Unterschrift-Datei automatisch suchen
 closing: Mit freundlichem Gruss  # Schlussgruss
@@ -323,7 +349,7 @@ Interaktiver Wizard zum Erstellen von `profile.yaml` im aktuellen Verzeichnis.
 
 ### `mdo new [DATEINAME]`
 
-Erstellt eine Brief-`.md` mit Frontmatter aus `profile.yaml`. Ohne `DATEINAME` wird `JJJJ-MM-TT_BriefCC.md` erzeugt (kollisionssicherer Zaehler).
+Fragt interaktiv Betreff, Datum und Empfaenger ab und erstellt eine Brief-`.md` mit Frontmatter aus `profile.yaml`. Ohne `DATEINAME` wird `JJJJ-MM-TT_BriefCC.md` erzeugt (kollisionssicherer Zaehler). Mit `--silent` / `-s` werden die Abfragen uebersprungen und Standardwerte verwendet.
 
 ### `mdo compile DATEINAME.md`
 
@@ -354,6 +380,7 @@ Laedt die benoetigten statischen Schriften (Source Serif 4, Source Sans 3, Sourc
 | `bank` | String | Bankname |
 | `qr_code` | Boolean | vCard-QR-Code anzeigen |
 | `signature` | Boolean | Unterschrift-Datei automatisch suchen (unterschrift.svg/png/jpg/gif) |
+| `signature_width` | Int/null | Unterschrift-Breite in mm (`null` = Template-Standard 30pt) |
 | `closing` | String | Schlussgruss (z.B. "Mit freundlichem Gruss") |
 | `accent` | String/null | Akzentfarbe als Hex (z.B. `"#B03060"`, `null` = Template-Standard) |
 | `open` | Boolean | PDF nach Kompilierung oeffnen |
@@ -371,6 +398,17 @@ Laedt die benoetigten statischen Schriften (Source Serif 4, Source Sans 3, Sourc
 ### Unterschrift
 
 Die Unterschrift-Datei im selben Verzeichnis wie den Brief ablegen. Unterstuetzte Formate: SVG, PNG, GIF, JPG. SVG oder transparentes PNG empfohlen.
+
+## Entwicklung
+
+```bash
+git clone git@github.com:jcmx9/mdo-cli.git
+cd mdo-cli
+uv venv && source .venv/bin/activate && uv sync --all-extras
+pytest --cov=src -n auto
+ruff check --fix . && ruff format .
+mypy src/
+```
 
 ## Lizenz
 

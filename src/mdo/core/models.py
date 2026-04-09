@@ -39,6 +39,7 @@ class LetterData(BaseModel):
     bank: str = ""
     qr_code: bool = False
     signature: str | bool | None = None
+    signature_width: int | None = None
     closing: str = "Mit freundlichem Gruß"
 
     # Letter

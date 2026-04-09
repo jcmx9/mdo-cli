@@ -16,6 +16,7 @@ PROFILE_FIELDS = [
     ("bic", "BIC", "COBADEFFXXX"),
     ("bank", "Bank", "Commerzbank"),
     ("accent", "Akzentfarbe (Hex oder null)", "null"),
+    ("signature_width", "Unterschrift-Breite in mm (null = Standard)", "null"),
 ]
 
 FIELD_COMMENTS: dict[str, str] = {
@@ -31,6 +32,7 @@ FIELD_COMMENTS: dict[str, str] = {
     "accent": "Akzentfarbe als Hex (null = Template-Standard)",
     "qr_code": "vCard-QR-Code im Infoblock anzeigen",
     "signature": "Unterschrift-Datei automatisch suchen (unterschrift.svg/png/jpg/gif)",
+    "signature_width": "Unterschrift-Breite in mm (null = Template-Standard 30pt)",
     "closing": "Schlussgruss",
     "open": "PDF nach Kompilierung oeffnen",
     "reveal": "PDF im Dateimanager anzeigen",
@@ -71,8 +73,10 @@ def profile() -> None:
 
     for key, label, default in PROFILE_FIELDS:
         value = typer.prompt(f"  {label}", default=default)
-        if key == "accent" and value.lower() == "null":
+        if key in ("accent", "signature_width") and value.lower() == "null":
             data[key] = None
+        elif key == "signature_width" and value.lower() != "null":
+            data[key] = int(value)
         else:
             data[key] = value
 

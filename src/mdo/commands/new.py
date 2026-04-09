@@ -45,9 +45,68 @@ LETTER_COMMENTS: dict[str, str] = {
 }
 
 
+DEFAULT_RECIPIENT = [
+    "Firma/Amt",
+    "Vorname Nachname",
+    "Strassenname 1a",
+    "12345 Musterstadt",
+]
+
+
+def _prompt_recipient() -> list[str]:
+    """Prompt for recipient address lines. Enter on empty line = default/done."""
+    typer.echo("  Empfaenger (Zeile fuer Zeile, leere Zeile = fertig):")
+    recipient_lines: list[str] = []
+    for i, default in enumerate(DEFAULT_RECIPIENT):
+        raw = typer.prompt(f"    Zeile {i + 1}", default=default)
+        recipient_lines.append(raw)
+
+    # Additional lines beyond the 4 defaults
+    while True:
+        raw = typer.prompt(f"    Zeile {len(recipient_lines) + 1}", default="")
+        if not raw:
+            break
+        recipient_lines.append(raw)
+
+    return recipient_lines
+
+
+def _build_frontmatter(
+    profile_data: dict[str, object],
+    subject: str | None,
+    date_value: str | None,
+    recipient: list[str],
+) -> str:
+    """Build YAML frontmatter string from profile and letter fields."""
+    comments = {**FIELD_COMMENTS, **LETTER_COMMENTS}
+
+    lines: list[str] = ["---"]
+    for key, value in profile_data.items():
+        comment = comments.get(key, "")
+        suffix = f"  # {comment}" if comment else ""
+        lines.append(f"{key}: {_format_value(value)}{suffix}")
+
+    lines.append(f"date: {_format_value(date_value)}  # {comments['date']}")
+    lines.append(f"subject: {_format_value(subject)}  # {comments['subject']}")
+    lines.append(
+        f"recipient:  # {comments['recipient']}" + "".join(f"\n  - {line}" for line in recipient)
+    )
+    lines.append(
+        f"# attachments:  # {comments['attachments']}"
+        "\n#   - Lebenslauf"
+        "\n#   - Zeugnis"
+        "\nattachments: []"
+    )
+    lines.append("---")
+    return "\n".join(lines)
+
+
 def new(
     filename: Optional[str] = typer.Argument(  # noqa: UP007
         None, help="Output filename (auto-generated if omitted)"
+    ),
+    silent: bool = typer.Option(
+        False, "--silent", "-s", help="Skip interactive prompts, use defaults"
     ),
 ) -> None:
     """Create a new letter .md from profile.yaml."""
@@ -58,36 +117,24 @@ def new(
 
     profile_data = yaml.safe_load(profile_path.read_text())
 
+    if silent:
+        subject = None
+        date_value = None
+        recipient = list(DEFAULT_RECIPIENT)
+    else:
+        typer.echo("Neuen Brief anlegen. Enter fuer Standardwert.\n")
+
+        subject_input = typer.prompt("  Betreff", default="")
+        subject = subject_input if subject_input else None
+
+        date_input = typer.prompt("  Datum (JJJJ-MM-TT)", default="heute")
+        date_value = None if date_input.lower() == "heute" else date_input
+
+        recipient = _prompt_recipient()
+
     target = filename if filename else _next_filename()
 
-    # Merge all comments
-    comments = {**FIELD_COMMENTS, **LETTER_COMMENTS}
-
-    # Build frontmatter lines manually to avoid yaml.dump quoting
-    lines: list[str] = ["---"]
-    for key, value in profile_data.items():
-        comment = comments.get(key, "")
-        suffix = f"  # {comment}" if comment else ""
-        lines.append(f"{key}: {_format_value(value)}{suffix}")
-
-    lines.append(f"date: null  # {comments['date']}")
-    lines.append(f"subject: null  # {comments['subject']}")
-    lines.append(
-        f"recipient:  # {comments['recipient']}"
-        "\n  - Firma GmbH"
-        "\n  - Frau / Herrn Vorname Nachname"
-        "\n  - Strasse Nr."
-        "\n  - PLZ Ort"
-    )
-    lines.append(
-        f"# attachments:  # {comments['attachments']}"
-        "\n#   - Lebenslauf"
-        "\n#   - Zeugnis"
-        "\nattachments: []"
-    )
-    lines.append("---")
-
-    fm_text = "\n".join(lines)
+    fm_text = _build_frontmatter(profile_data, subject, date_value, recipient)
     content = f"{fm_text}\n\nSehr geehrte Damen und Herren,\n\n\n"
 
     Path(target).write_text(content, encoding="utf-8")

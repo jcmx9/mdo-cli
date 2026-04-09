@@ -19,6 +19,7 @@ def build_typst_files(*, data: LetterData, body: str) -> tuple[str, str]:
         "subject": data.subject,
         "closing": data.closing,
         "signature": data.signature,
+        "signature_width": data.signature_width,
         "accent": data.accent,
         "attachments": data.attachments,
     }
@@ -29,7 +30,8 @@ def build_typst_files(*, data: LetterData, body: str) -> tuple[str, str]:
     typ_content = f"""\
 #import "@local/din5008a:{version}": din5008a, bullet
 #let data = json("brief.json")
-#let sig = if data.signature != none {{ image(data.signature, width: 40mm) }} else {{ none }}
+#let sig-width = if data.at("signature_width", default: none) != none {{ data.signature_width * 1mm }} else {{ 30pt }}
+#let sig = if data.signature != none {{ image(data.signature, width: sig-width) }} else {{ none }}
 
 #show: din5008a.with(
   sender: data.sender,

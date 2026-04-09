@@ -11,7 +11,7 @@ from mdo.commands.update import update
 
 app = typer.Typer(
     name="mdo",
-    help="Generate DIN 5008 Form A business letters as PDF/A from Markdown.",
+    help=f"Generate DIN 5008 Form A business letters as PDF/A from Markdown. (v{__version__})",
     no_args_is_help=True,
 )
 
