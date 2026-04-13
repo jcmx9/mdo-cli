@@ -13,7 +13,6 @@ from mdo.core.markdown import md_to_typst
 from mdo.core.models import LetterData
 from mdo.core.typst_builder import build_typst_files
 
-
 GERMAN_MONTHS = {
     "Januar": "01",
     "Februar": "02",
@@ -101,7 +100,7 @@ def compile_letter(
             subprocess.run([tool, "--version"], capture_output=True, check=True)
         except FileNotFoundError:
             typer.echo(f"Error: {tool} not found. Install: {url}", err=True)
-            raise typer.Exit(1)
+            raise typer.Exit(1) from None
 
     # Parse frontmatter + body
     fm, body = _parse_letter(path)
@@ -113,7 +112,7 @@ def compile_letter(
         for err in e.errors():
             field = ".".join(str(x) for x in err["loc"])
             typer.echo(f"Error: {field}: {err['msg']}", err=True)
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
     # Signature: resolve boolean/string to actual file
     if data.signature is True:
@@ -133,7 +132,7 @@ def compile_letter(
         typst_body = md_to_typst(body)
     except RuntimeError as e:
         typer.echo(f"Error: {e}", err=True)
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
     # Build .typ + .json
     typ_content, json_content = build_typst_files(data=data, body=typst_body)
@@ -200,7 +199,7 @@ def _open_file(path: Path) -> None:
     elif system == "Linux":
         subprocess.run(["xdg-open", str(path)], check=False)
     else:
-        subprocess.run(["start", "", str(path)], check=False, shell=True)  # noqa: S603
+        subprocess.run(["start", "", str(path)], check=False, shell=True)
 
 
 def _reveal_file(path: Path) -> None:

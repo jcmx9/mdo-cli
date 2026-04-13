@@ -2,7 +2,6 @@ from pathlib import Path
 
 import typer
 
-
 PROFILE_FILE = "profile.yaml"
 
 PROFILE_FIELDS = [

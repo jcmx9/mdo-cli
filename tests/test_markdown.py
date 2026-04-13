@@ -41,13 +41,17 @@ def test_plain_text() -> None:
 
 
 def test_pandoc_not_found() -> None:
-    with patch("mdo.core.markdown.subprocess.run", side_effect=FileNotFoundError):
-        with pytest.raises(RuntimeError, match="pandoc not found"):
-            md_to_typst("text")
+    with (
+        patch("mdo.core.markdown.subprocess.run", side_effect=FileNotFoundError),
+        pytest.raises(RuntimeError, match="pandoc not found"),
+    ):
+        md_to_typst("text")
 
 
 def test_pandoc_error() -> None:
     error = subprocess.CalledProcessError(1, "pandoc", stderr="bad input")
-    with patch("mdo.core.markdown.subprocess.run", side_effect=error):
-        with pytest.raises(RuntimeError, match="pandoc conversion failed"):
-            md_to_typst("text")
+    with (
+        patch("mdo.core.markdown.subprocess.run", side_effect=error),
+        pytest.raises(RuntimeError, match="pandoc conversion failed"),
+    ):
+        md_to_typst("text")

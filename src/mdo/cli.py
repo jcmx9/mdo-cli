@@ -1,5 +1,3 @@
-from typing import Optional
-
 import typer
 
 from mdo import __version__
@@ -43,7 +41,7 @@ def _markdown_callback(value: bool) -> None:
 
 @app.callback()
 def main(
-    version: Optional[bool] = typer.Option(  # noqa: UP007
+    version: bool | None = typer.Option(
         None,
         "--version",
         "-V",
@@ -51,7 +49,7 @@ def main(
         callback=_version_callback,
         is_eager=True,
     ),
-    markdown: Optional[bool] = typer.Option(  # noqa: UP007
+    markdown: bool | None = typer.Option(
         None,
         "--markdown",
         help="Show Markdown cheatsheet and exit.",

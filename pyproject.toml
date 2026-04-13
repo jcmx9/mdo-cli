@@ -1,10 +1,25 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [project]
 name = "mdo-cli"
 dynamic = ["version"]
 description = "Generate DIN 5008 Form A business letters as PDF/A from Markdown"
+readme = "README.md"
+license = { text = "MIT" }
 requires-python = ">=3.12"
-license = "MIT"
-authors = [{name = "jcmx9", email = "jcmx9@tutamail.com"}]
+authors = [
+    { name = "jcmx9", email = "jcmx9@tutamail.com" },
+]
+keywords = ["din5008", "letter", "typst", "pandoc", "pdf"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Topic :: Office/Business",
+    "Topic :: Text Processing :: Markup",
+]
 dependencies = [
     "typer>=0.15",
     "pyyaml>=6.0",
@@ -14,9 +29,22 @@ dependencies = [
 [project.scripts]
 mdo = "mdo.cli:app"
 
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+[project.urls]
+Homepage = "https://github.com/jcmx9/mdo-cli"
+Repository = "https://github.com/jcmx9/mdo-cli"
+Issues = "https://github.com/jcmx9/mdo-cli/issues"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "pytest-cov>=6.0",
+    "pytest-xdist>=3.5",
+    "ruff>=0.11",
+    "mypy>=1.14",
+    "types-pyyaml>=6.0.12.20250915",
+    "bump-my-version>=1.1",
+    "pre-commit>=3.7",
+]
 
 [tool.hatch.version]
 path = "src/mdo/__init__.py"
@@ -25,34 +53,50 @@ path = "src/mdo/__init__.py"
 packages = ["src/mdo"]
 
 [tool.ruff]
+target-version = "py312"
 line-length = 100
 
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "B", "A", "SIM", "RUF"]
+
 [tool.mypy]
+python_version = "3.12"
 strict = true
 packages = ["mdo"]
 mypy_path = "src"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "--tb=short"
+addopts = "--cov=src/mdo --cov-report=term-missing -n auto"
 
-[dependency-groups]
-dev = [
-    "pytest>=8.0",
-    "pytest-cov>=6.0",
-    "ruff>=0.11",
-    "mypy>=1.14",
-    "types-pyyaml>=6.0.12.20250915",
-    "bump-my-version>=1.1",
+[tool.coverage.run]
+source = ["src/mdo"]
+branch = true
+
+[tool.coverage.report]
+fail_under = 65
+show_missing = true
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "if __name__ == .__main__.:",
+    "@(abc\\.)?abstractmethod",
 ]
 
 [tool.bumpversion]
 current_version = "26.4.28"
-parse = "(?P<major>\\d+)\\.(?P<minor>\\d+)\\.(?P<patch>\\d+)(\\.dev(?P<dev>\\d+))?"
+commit = true
+tag = true
+tag_name = "v{new_version}"
+tag_message = "Release {new_version}"
+commit_message = "release: {new_version}"
+parse = "(?P<year>\\d{2})\\.(?P<month>\\d{1,2})\\.(?P<micro>\\d+)(\\.dev(?P<dev>\\d+))?"
 serialize = [
-    "{major}.{minor}.{patch}.dev{dev}",
-    "{major}.{minor}.{patch}",
+    "{year}.{month}.{micro}.dev{dev}",
+    "{year}.{month}.{micro}",
 ]
 
 [[tool.bumpversion.files]]
 filename = "src/mdo/__init__.py"
+search = '__version__ = "{current_version}"'
+replace = '__version__ = "{new_version}"'

@@ -1,7 +1,6 @@
 import datetime
 import re
 from pathlib import Path
-from typing import Optional
 
 import typer
 import yaml
@@ -102,9 +101,7 @@ def _build_frontmatter(
 
 
 def new(
-    filename: Optional[str] = typer.Argument(  # noqa: UP007
-        None, help="Output filename (auto-generated if omitted)"
-    ),
+    filename: str | None = typer.Argument(None, help="Output filename (auto-generated if omitted)"),
     silent: bool = typer.Option(
         False, "--silent", "-s", help="Skip interactive prompts, use defaults"
     ),

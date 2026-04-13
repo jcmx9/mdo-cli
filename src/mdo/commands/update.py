@@ -40,10 +40,10 @@ def update() -> None:
             )
         except FileNotFoundError:
             typer.echo("Error: git not found", err=True)
-            raise typer.Exit(1)
+            raise typer.Exit(1) from None
         except subprocess.CalledProcessError as e:
             typer.echo(f"Error: git clone failed:\n{e.stderr}", err=True)
-            raise typer.Exit(1)
+            raise typer.Exit(1) from None
 
         version = _read_version(tmp_path)
         target = typst_packages_dir() / PACKAGE_NAME / version
