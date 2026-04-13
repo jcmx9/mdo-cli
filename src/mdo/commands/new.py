@@ -1,4 +1,5 @@
 import datetime
+import logging
 import re
 from pathlib import Path
 
@@ -6,6 +7,8 @@ import typer
 import yaml
 
 from mdo.commands.profile import FIELD_COMMENTS, PROFILE_FILE
+
+logger = logging.getLogger(__name__)
 
 
 def _next_filename() -> str:
@@ -130,6 +133,7 @@ def new(
         recipient = _prompt_recipient()
 
     target = filename if filename else _next_filename()
+    logger.debug("Creating letter: %s (silent=%s)", target, silent)
 
     fm_text = _build_frontmatter(profile_data, subject, date_value, recipient)
     content = f"{fm_text}\n\nSehr geehrte Damen und Herren,\n\n\n"

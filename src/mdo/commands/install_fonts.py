@@ -1,9 +1,12 @@
+import logging
 import subprocess
 import tempfile
 import zipfile
 from pathlib import Path
 
 import typer
+
+logger = logging.getLogger(__name__)
 
 FONTS = [
     {
@@ -61,10 +64,12 @@ def install_fonts() -> None:
     """Download and install required fonts for the din5008a template."""
     fonts_dir = mdo_fonts_dir()
     fonts_dir.mkdir(parents=True, exist_ok=True)
+    logger.debug("Font target directory: %s", fonts_dir)
 
     for font in FONTS:
         typer.echo(f"Downloading {font['name']} ...")
 
+        logger.debug("Fetching release URL for %s from %s", font["name"], font["repo"])
         url = _get_download_url(font["repo"], font["asset_prefix"], font["asset_suffix"])
         if not url:
             typer.echo(f"  Error: could not find release for {font['name']}", err=True)

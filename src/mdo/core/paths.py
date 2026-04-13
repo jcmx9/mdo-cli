@@ -1,5 +1,8 @@
+import logging
 import platform
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 PACKAGE_NAME = "din5008a"
 FALLBACK_VERSION = "0.1.1"

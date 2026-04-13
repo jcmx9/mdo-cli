@@ -1,3 +1,4 @@
+import logging
 import re
 import shutil
 import subprocess
@@ -7,6 +8,8 @@ from pathlib import Path
 import typer
 
 from mdo.core.paths import PACKAGE_NAME, typst_packages_dir
+
+logger = logging.getLogger(__name__)
 
 REPO_URL = "https://github.com/jcmx9/typst-DIN5008a.git"
 
@@ -47,6 +50,7 @@ def update() -> None:
 
         version = _read_version(tmp_path)
         target = typst_packages_dir() / PACKAGE_NAME / version
+        logger.debug("Installing template to %s", target)
         target.mkdir(parents=True, exist_ok=True)
 
         # Copy all package files (src/, typst.toml, version.typ, etc.)

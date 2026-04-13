@@ -1,4 +1,7 @@
+import logging
 import subprocess
+
+logger = logging.getLogger(__name__)
 
 
 def md_to_typst(text: str) -> str:

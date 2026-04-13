@@ -1,6 +1,9 @@
+import logging
 from pathlib import Path
 
 import typer
+
+logger = logging.getLogger(__name__)
 
 PROFILE_FILE = "profile.yaml"
 
@@ -90,4 +93,5 @@ def profile() -> None:
     data["reveal"] = True
 
     _write_profile(data, path)
+    logger.debug("Profile written to %s", path)
     typer.echo(f"\nCreated {PROFILE_FILE}")

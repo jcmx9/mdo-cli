@@ -1,3 +1,4 @@
+import logging
 import platform
 import re
 import subprocess
@@ -12,6 +13,8 @@ from mdo.core.fonts import FONT_HELP_URL, check_fonts
 from mdo.core.markdown import md_to_typst
 from mdo.core.models import LetterData
 from mdo.core.typst_builder import build_typst_files
+
+logger = logging.getLogger(__name__)
 
 GERMAN_MONTHS = {
     "Januar": "01",
@@ -88,6 +91,7 @@ def compile_letter(
         raise typer.Exit(1)
 
     # Font check
+    logger.debug("Checking fonts in %s", mdo_fonts_dir())
     missing = check_fonts(mdo_fonts_dir())
     if missing:
         typer.echo(f"Error: Missing system fonts: {', '.join(missing)}", err=True)
@@ -95,6 +99,7 @@ def compile_letter(
         raise typer.Exit(1)
 
     # Check external tools
+    logger.debug("Checking external tools")
     for tool, url in [("typst", "https://typst.app"), ("pandoc", "https://pandoc.org")]:
         try:
             subprocess.run([tool, "--version"], capture_output=True, check=True)
@@ -115,6 +120,7 @@ def compile_letter(
         raise typer.Exit(1) from None
 
     # Signature: resolve boolean/string to actual file
+    logger.debug("Resolving signature: %s", data.signature)
     if data.signature is True:
         found = None
         for ext in ("svg", "png", "jpg", "gif"):
@@ -145,6 +151,7 @@ def compile_letter(
         typ_path.write_text(typ_content, encoding="utf-8")
         json_path.write_text(json_content, encoding="utf-8")
 
+        logger.debug("Compiling %s to PDF/A-2b", typ_path)
         typst_cmd = ["typst", "compile", "--pdf-standard", "a-2b"]
         fonts_path = mdo_fonts_dir()
         if fonts_path.exists():
@@ -164,6 +171,7 @@ def compile_letter(
 
         # Rename .md, .pdf, and .typ to YYYY-MM-DD_recipient - subject
         final_name = _build_filename(data)
+        logger.debug("Auto-rename target: %s", final_name)
         if final_name and pdf_path.exists():
             try:
                 final_md = path.parent / f"{final_name}.md"

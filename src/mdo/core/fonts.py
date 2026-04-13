@@ -1,5 +1,8 @@
+import logging
 import subprocess
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 REQUIRED_FONTS = ["Source Serif 4", "Source Sans 3", "Source Code Pro"]
 
@@ -14,6 +17,7 @@ def check_fonts(mdo_fonts_path: Path | None = None) -> list[str]:
     if mdo_fonts_path and mdo_fonts_path.exists():
         otf_files = list(mdo_fonts_path.glob("*.otf"))
         if otf_files:
+            logger.debug("Found %d .otf files in %s", len(otf_files), mdo_fonts_path)
             return []
 
     try:
