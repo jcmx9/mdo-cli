@@ -57,7 +57,9 @@ case "$MODE" in
 
         VERSION="$(current_version)"
 
+        git push origin dev
         git checkout main
+        git pull origin main
         git merge dev --no-edit
         git tag "v$VERSION"
         git push origin main --tags

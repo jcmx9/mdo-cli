@@ -86,9 +86,7 @@ exclude_lines = [
 [tool.bumpversion]
 current_version = "26.4.32"
 commit = true
-tag = true
-tag_name = "v{new_version}"
-tag_message = "Release {new_version}"
+tag = false
 commit_message = "release: {new_version}"
 parse = "(?P<year>\\d{2})\\.(?P<month>\\d{1,2})\\.(?P<micro>\\d+)(\\.dev(?P<dev>\\d+))?"
 serialize = [
