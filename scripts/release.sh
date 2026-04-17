@@ -22,7 +22,7 @@ ensure_clean() {
 }
 
 current_version() {
-    python3 -c "from mdo import __version__; print(__version__)"
+    uv run python -c "from mdo import __version__; print(__version__)"
 }
 
 case "$MODE" in
