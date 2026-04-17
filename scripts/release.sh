@@ -49,11 +49,11 @@ case "$MODE" in
         fi
 
         if [[ "$NEW_MONTH" == "--new-month" ]]; then
-            bump-my-version bump minor
+            bump-my-version bump month
         fi
 
         # Ensure clean prod version (strip .devN)
-        bump-my-version bump patch
+        bump-my-version bump micro
 
         VERSION="$(current_version)"
 
