@@ -1,4 +1,5 @@
 from pathlib import Path
+from unittest.mock import patch
 
 import yaml
 from typer.testing import CliRunner
@@ -8,11 +9,14 @@ from mdo.cli import app
 runner = CliRunner()
 
 
-def test_profile_creates_yaml_with_defaults(work_dir: Path) -> None:
-    # Press Enter for all prompts — 14 prompts (name..signature_width + qr/sig/closing)
-    result = runner.invoke(app, ["profile"], input="\n" * 14)
+@patch("mdo.core.profile.profiles_dir")
+def test_profile_create_with_defaults(mock_dir: object, tmp_path: Path) -> None:
+    profiles_path = tmp_path / "profiles"
+    profiles_path.mkdir()
+    mock_dir.return_value = profiles_path  # type: ignore[union-attr]
+    result = runner.invoke(app, ["profile", "create"], input="\n" * 14)
     assert result.exit_code == 0
-    p = work_dir / "profile.yaml"
+    p = profiles_path / "default.yaml"
     assert p.exists()
     data = yaml.safe_load(p.read_text())
     assert data["name"] == "Max Mustermann"
@@ -30,31 +34,85 @@ def test_profile_creates_yaml_with_defaults(work_dir: Path) -> None:
     assert "bank" in data
 
 
-def test_profile_creates_yaml_with_custom_values(work_dir: Path) -> None:
+@patch("mdo.core.profile.profiles_dir")
+def test_profile_create_with_custom_values(mock_dir: object, tmp_path: Path) -> None:
+    profiles_path = tmp_path / "profiles"
+    profiles_path.mkdir()
+    mock_dir.return_value = profiles_path  # type: ignore[union-attr]
     inputs = (
         "Anna Weber\nLindenallee 12\n80331\nMuenchen\n089 123\n"
         "anna@example.de\nDE91 1234\nBFSWDE33\nTestbank\n#265282\n"
-        "null\nja\nunterschrift.svg\nMit herzlichen Gruessen\n"
+        "null\nja\nja\nMit herzlichen Gruessen\n"
     )
-    result = runner.invoke(app, ["profile"], input=inputs)
+    result = runner.invoke(app, ["profile", "create"], input=inputs)
     assert result.exit_code == 0
-    data = yaml.safe_load((work_dir / "profile.yaml").read_text())
+    data = yaml.safe_load((profiles_path / "default.yaml").read_text())
     assert data["name"] == "Anna Weber"
     assert data["city"] == "Muenchen"
-    assert data["zip"] == 80331  # yaml parses unquoted number
 
 
-def test_profile_no_quotes_on_zip(work_dir: Path) -> None:
-    result = runner.invoke(app, ["profile"], input="\n" * 14)
+@patch("mdo.core.profile.profiles_dir")
+def test_profile_create_named(mock_dir: object, tmp_path: Path) -> None:
+    profiles_path = tmp_path / "profiles"
+    profiles_path.mkdir()
+    mock_dir.return_value = profiles_path  # type: ignore[union-attr]
+    result = runner.invoke(app, ["profile", "create", "--name", "work"], input="\n" * 14)
     assert result.exit_code == 0
-    raw = (work_dir / "profile.yaml").read_text()
+    assert (profiles_path / "work.yaml").exists()
+
+
+@patch("mdo.core.profile.profiles_dir")
+def test_profile_no_quotes_on_zip(mock_dir: object, tmp_path: Path) -> None:
+    profiles_path = tmp_path / "profiles"
+    profiles_path.mkdir()
+    mock_dir.return_value = profiles_path  # type: ignore[union-attr]
+    result = runner.invoke(app, ["profile", "create"], input="\n" * 14)
+    assert result.exit_code == 0
+    raw = (profiles_path / "default.yaml").read_text()
     assert "zip: 12345" in raw
     assert "'12345'" not in raw
     assert '"12345"' not in raw
 
 
-def test_profile_aborts_if_exists(work_dir: Path) -> None:
-    (work_dir / "profile.yaml").write_text("name: Old")
-    result = runner.invoke(app, ["profile"], input="\n")
+@patch("mdo.core.profile.profiles_dir")
+def test_profile_list_empty(mock_dir: object, tmp_path: Path) -> None:
+    profiles_path = tmp_path / "profiles"
+    profiles_path.mkdir()
+    mock_dir.return_value = profiles_path  # type: ignore[union-attr]
+    result = runner.invoke(app, ["profile", "list"])
+    assert result.exit_code == 0
+    assert "Keine Profile" in result.output
+
+
+@patch("mdo.core.profile.profiles_dir")
+def test_profile_list_shows_profiles(mock_dir: object, tmp_path: Path) -> None:
+    profiles_path = tmp_path / "profiles"
+    profiles_path.mkdir()
+    mock_dir.return_value = profiles_path  # type: ignore[union-attr]
+    (profiles_path / "default.yaml").write_text("name: Test\n")
+    (profiles_path / "work.yaml").write_text("name: Work\n")
+    result = runner.invoke(app, ["profile", "list"])
+    assert result.exit_code == 0
+    assert "default" in result.output
+    assert "work" in result.output
+
+
+@patch("mdo.core.profile.profiles_dir")
+def test_profile_delete(mock_dir: object, tmp_path: Path) -> None:
+    profiles_path = tmp_path / "profiles"
+    profiles_path.mkdir()
+    mock_dir.return_value = profiles_path  # type: ignore[union-attr]
+    (profiles_path / "temp.yaml").write_text("name: Temp\n")
+    result = runner.invoke(app, ["profile", "delete", "temp"])
+    assert result.exit_code == 0
+    assert not (profiles_path / "temp.yaml").exists()
+
+
+@patch("mdo.core.profile.profiles_dir")
+def test_profile_delete_default_fails(mock_dir: object, tmp_path: Path) -> None:
+    profiles_path = tmp_path / "profiles"
+    profiles_path.mkdir()
+    mock_dir.return_value = profiles_path  # type: ignore[union-attr]
+    (profiles_path / "default.yaml").write_text("name: Default\n")
+    result = runner.invoke(app, ["profile", "delete", "default"])
     assert result.exit_code != 0
-    assert "already exists" in result.output

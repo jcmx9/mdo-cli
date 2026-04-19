@@ -1,11 +1,19 @@
 import logging
-from pathlib import Path
 
 import typer
 
+from mdo.core.models import ProfileConfig
+from mdo.core.profile import delete_profile as core_delete
+from mdo.core.profile import list_profiles as core_list
+from mdo.core.profile import save_profile as core_save
+
 logger = logging.getLogger(__name__)
 
-PROFILE_FILE = "profile.yaml"
+profile_app = typer.Typer(
+    name="profile",
+    help="Absenderprofile verwalten.",
+    no_args_is_help=True,
+)
 
 PROFILE_FIELDS = [
     ("name", "Name", "Max Mustermann"),
@@ -21,55 +29,13 @@ PROFILE_FIELDS = [
     ("signature_width", "Unterschrift-Breite in mm (null = Standard)", "null"),
 ]
 
-FIELD_COMMENTS: dict[str, str] = {
-    "name": "Absendername",
-    "street": "Strasse und Hausnummer",
-    "zip": "Postleitzahl",
-    "city": "Ort",
-    "phone": "Telefonnummer",
-    "email": "E-Mail-Adresse",
-    "iban": "Bank-IBAN",
-    "bic": "Bank-BIC",
-    "bank": "Bankname",
-    "accent": "Akzentfarbe als Hex (null = Template-Standard)",
-    "qr_code": "vCard-QR-Code im Infoblock anzeigen",
-    "signature": "Unterschrift-Datei automatisch suchen (unterschrift.svg/png/jpg/gif)",
-    "signature_width": "Unterschrift-Breite in mm (null = Template-Standard 30pt)",
-    "closing": "Schlussgruss",
-    "open": "PDF nach Kompilierung oeffnen",
-    "reveal": "PDF im Dateimanager anzeigen",
-}
 
-
-def _write_profile(data: dict[str, object], path: Path) -> None:
-    """Write profile.yaml with inline comments."""
-    lines: list[str] = []
-    for key, value in data.items():
-        if value is None:
-            formatted = "null"
-        elif isinstance(value, bool):
-            formatted = "true" if value else "false"
-        elif isinstance(value, str) and value.startswith("#"):
-            formatted = f'"{value}"'
-        else:
-            formatted = str(value)
-
-        comment = FIELD_COMMENTS.get(key, "")
-        if comment:
-            lines.append(f"{key}: {formatted}  # {comment}")
-        else:
-            lines.append(f"{key}: {formatted}")
-    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
-
-
-def profile() -> None:
-    """Create a new profile.yaml interactively."""
-    path = Path(PROFILE_FILE)
-    if path.exists():
-        typer.echo(f"Error: {PROFILE_FILE} already exists", err=True)
-        raise typer.Exit(1)
-
-    typer.echo("Neues Absenderprofil anlegen. Enter fuer Standardwert.\n")
+@profile_app.command("create")
+def create(
+    name: str = typer.Option("default", "--name", "-n", help="Profile name"),
+) -> None:
+    """Neues Absenderprofil interaktiv anlegen."""
+    typer.echo(f"Neues Absenderprofil '{name}' anlegen. Enter fuer Standardwert.\n")
 
     data: dict[str, object] = {}
 
@@ -82,7 +48,6 @@ def profile() -> None:
         else:
             data[key] = value
 
-    # Non-interactive fields with sensible defaults
     qr_input = typer.prompt("  vCard QR-Code anzeigen (ja/nein)", default="ja")
     data["qr_code"] = qr_input.lower() in ("ja", "j", "yes", "y", "true")
     sig_input = typer.prompt("  Unterschrift verwenden (ja/nein)", default="ja")
@@ -92,6 +57,33 @@ def profile() -> None:
     data["open"] = True
     data["reveal"] = True
 
-    _write_profile(data, path)
-    logger.debug("Profile written to %s", path)
-    typer.echo(f"\nCreated {PROFILE_FILE}")
+    config = ProfileConfig.model_validate(data)
+    path = core_save(config, name=name)
+    typer.echo(f"\nCreated profile '{name}' at {path}")
+
+
+@profile_app.command("list")
+def list_cmd() -> None:
+    """Alle verfuegbaren Profile anzeigen."""
+    names = core_list()
+    if not names:
+        typer.echo("Keine Profile gefunden. Erstelle eines mit: mdo profile create")
+        return
+    for n in names:
+        typer.echo(f"  {n}")
+
+
+@profile_app.command("delete")
+def delete(
+    name: str = typer.Argument(help="Name des zu loeschenden Profils"),
+) -> None:
+    """Ein Profil loeschen."""
+    try:
+        core_delete(name)
+    except ValueError as e:
+        typer.echo(f"Error: {e}", err=True)
+        raise typer.Exit(1) from None
+    except FileNotFoundError as e:
+        typer.echo(f"Error: {e}", err=True)
+        raise typer.Exit(1) from None
+    typer.echo(f"Deleted profile '{name}'")

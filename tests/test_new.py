@@ -58,4 +58,4 @@ def test_new_includes_profile_fields(profile_yaml: Path, work_dir: Path) -> None
 def test_new_fails_without_profile(work_dir: Path) -> None:
     result = runner.invoke(app, ["new", "--silent"])
     assert result.exit_code != 0
-    assert "profile.yaml" in result.output
+    assert "profile" in result.output.lower()

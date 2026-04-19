@@ -7,7 +7,7 @@ from mdo.exceptions import TemplateError, ToolNotFoundError
 def update() -> None:
     """Download/update the din5008a Typst template."""
     try:
-        target = install_template(method="git")
+        target = install_template(method="auto")
     except ToolNotFoundError as e:
         typer.echo(f"Error: {e}", err=True)
         raise typer.Exit(1) from None

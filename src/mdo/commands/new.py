@@ -6,7 +6,7 @@ from pathlib import Path
 import typer
 import yaml
 
-from mdo.commands.profile import FIELD_COMMENTS, PROFILE_FILE
+from mdo.core.profile import FIELD_COMMENTS, load_profile
 
 logger = logging.getLogger(__name__)
 
@@ -103,19 +103,34 @@ def _build_frontmatter(
     return "\n".join(lines)
 
 
+def _load_profile_data() -> dict[str, object]:
+    """Load profile data: local profile.yaml first, then ~/.mdo/profiles/default.yaml."""
+    local_profile = Path("profile.yaml")
+    if local_profile.exists():
+        data: dict[str, object] = yaml.safe_load(local_profile.read_text())
+        return data
+
+    try:
+        config = load_profile("default")
+        return config.model_dump()
+    except FileNotFoundError:
+        return {}
+
+
 def new(
     filename: str | None = typer.Argument(None, help="Output filename (auto-generated if omitted)"),
     silent: bool = typer.Option(
         False, "--silent", "-s", help="Skip interactive prompts, use defaults"
     ),
 ) -> None:
-    """Create a new letter .md from profile.yaml."""
-    profile_path = Path(PROFILE_FILE)
-    if not profile_path.exists():
-        typer.echo(f"Error: {PROFILE_FILE} not found in current directory", err=True)
+    """Create a new letter .md from profile."""
+    profile_data = _load_profile_data()
+    if not profile_data:
+        typer.echo(
+            "Error: No profile found. Create one with: mdo profile create",
+            err=True,
+        )
         raise typer.Exit(1)
-
-    profile_data = yaml.safe_load(profile_path.read_text())
 
     if silent:
         subject = None
