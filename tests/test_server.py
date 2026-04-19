@@ -48,3 +48,46 @@ def test_health(server):
     with urllib.request.urlopen(req) as resp:
         data = json.loads(resp.read())
     assert data["status"] == "ok"
+
+
+@patch("mdo.core.server.core_get_version", return_value="0.2.0")
+def test_get_template_version(mock_ver, server):
+    result = _post(server, "get_template_version")
+    assert result == {"result": "0.2.0"}
+
+
+@patch("mdo.core.server.core_load_profile")
+def test_load_profile(mock_load, server):
+    from mdo.core.models import ProfileConfig
+
+    mock_load.return_value = ProfileConfig(name="Test", street="Str 1", zip="12345", city="Stadt")
+    result = _post(server, "load_profile", {"name": "default"})
+    assert result["result"]["name"] == "Test"
+
+
+@patch("mdo.core.server.core_delete_profile")
+def test_delete_profile(mock_del, server):
+    result = _post(server, "delete_profile", {"name": "temp"})
+    assert result == {"result": "ok"}
+    mock_del.assert_called_once_with("temp")
+
+
+@patch("mdo.core.server.core_compile")
+def test_compile(mock_compile, server):
+    from pathlib import Path
+
+    from mdo.core.models import LetterData
+
+    data = LetterData(
+        name="Test",
+        street="S",
+        zip="1",
+        city="C",
+        recipient=["R"],
+        date="01. April 2026",
+        subject="Betreff",
+    )
+    mock_compile.return_value = (Path("/tmp/test.pdf"), data)
+    result = _post(server, "compile", {"path": "/tmp/brief.md"})
+    assert result["result"]["pdf_path"] == "/tmp/test.pdf"
+    assert result["result"]["subject"] == "Betreff"

@@ -3,8 +3,15 @@
 import json
 import logging
 from http.server import BaseHTTPRequestHandler, HTTPServer
+from pathlib import Path
 
+from mdo.core.compiler import compile_letter as core_compile
+from mdo.core.models import ProfileConfig
+from mdo.core.profile import delete_profile as core_delete_profile
 from mdo.core.profile import list_profiles as core_list_profiles
+from mdo.core.profile import load_profile as core_load_profile
+from mdo.core.profile import save_profile as core_save_profile
+from mdo.core.template import get_installed_version as core_get_version
 
 logger = logging.getLogger(__name__)
 
@@ -13,8 +20,44 @@ def _handle_list_profiles(params: dict[str, object]) -> list[str]:
     return core_list_profiles()
 
 
+def _handle_load_profile(params: dict[str, object]) -> dict[str, object]:
+    name = str(params.get("name", "default"))
+    config = core_load_profile(name)
+    return config.model_dump()
+
+
+def _handle_save_profile(params: dict[str, object]) -> str:
+    name = str(params.get("name", "default"))
+    data = params.get("data", {})
+    config = ProfileConfig.model_validate(data)
+    path = core_save_profile(config, name=name)
+    return str(path)
+
+
+def _handle_delete_profile(params: dict[str, object]) -> str:
+    name = str(params["name"])
+    core_delete_profile(name)
+    return "ok"
+
+
+def _handle_get_template_version(params: dict[str, object]) -> str | None:
+    return core_get_version()
+
+
+def _handle_compile(params: dict[str, object]) -> dict[str, object]:
+    path = Path(str(params["path"]))
+    keep_typ = bool(params.get("keep_typ", False))
+    pdf_path, data = core_compile(path, keep_typ=keep_typ)
+    return {"pdf_path": str(pdf_path), "subject": data.subject, "date": data.date}
+
+
 METHODS: dict[str, object] = {
     "list_profiles": _handle_list_profiles,
+    "load_profile": _handle_load_profile,
+    "save_profile": _handle_save_profile,
+    "delete_profile": _handle_delete_profile,
+    "get_template_version": _handle_get_template_version,
+    "compile": _handle_compile,
 }
 
 
