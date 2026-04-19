@@ -6,6 +6,10 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 
 from mdo.core.compiler import compile_letter as core_compile
+from mdo.core.letter import delete_letter as core_delete_letter
+from mdo.core.letter import list_letters as core_list_letters
+from mdo.core.letter import load_letter as core_load_letter
+from mdo.core.letter import save_letter as core_save_letter
 from mdo.core.models import ProfileConfig
 from mdo.core.profile import delete_profile as core_delete_profile
 from mdo.core.profile import list_profiles as core_list_profiles
@@ -44,6 +48,31 @@ def _handle_get_template_version(params: dict[str, object]) -> str | None:
     return core_get_version()
 
 
+def _handle_save_letter(params: dict[str, object]) -> str:
+    fm_raw = params.get("frontmatter", {})
+    fm: dict[str, object] = fm_raw if isinstance(fm_raw, dict) else {}
+    body = str(params.get("body", ""))
+    filename = params.get("filename")
+    path = core_save_letter(fm, body, filename=str(filename) if filename else None)
+    return str(path)
+
+
+def _handle_load_letter(params: dict[str, object]) -> dict[str, object]:
+    filename = str(params["filename"])
+    fm, body = core_load_letter(filename)
+    return {"frontmatter": fm, "body": body}
+
+
+def _handle_list_letters(params: dict[str, object]) -> list[str]:
+    return core_list_letters()
+
+
+def _handle_delete_letter(params: dict[str, object]) -> str:
+    filename = str(params["filename"])
+    core_delete_letter(filename)
+    return "ok"
+
+
 def _handle_compile(params: dict[str, object]) -> dict[str, object]:
     path = Path(str(params["path"]))
     keep_typ = bool(params.get("keep_typ", False))
@@ -58,6 +87,10 @@ METHODS: dict[str, object] = {
     "delete_profile": _handle_delete_profile,
     "get_template_version": _handle_get_template_version,
     "compile": _handle_compile,
+    "save_letter": _handle_save_letter,
+    "load_letter": _handle_load_letter,
+    "list_letters": _handle_list_letters,
+    "delete_letter": _handle_delete_letter,
 }
 
 

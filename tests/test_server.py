@@ -72,6 +72,42 @@ def test_delete_profile(mock_del, server):
     mock_del.assert_called_once_with("temp")
 
 
+@patch("mdo.core.server.core_save_letter")
+def test_save_letter(mock_save, server):
+    from pathlib import Path
+
+    mock_save.return_value = Path("/tmp/.mdo/letters/brief.md")
+    result = _post(
+        server,
+        "save_letter",
+        {
+            "frontmatter": {"subject": "Test", "recipient": ["Firma"]},
+            "body": "Hallo Welt",
+        },
+    )
+    assert "brief.md" in result["result"]
+
+
+@patch("mdo.core.server.core_load_letter")
+def test_load_letter(mock_load, server):
+    mock_load.return_value = ({"subject": "Test"}, "Hallo Welt")
+    result = _post(server, "load_letter", {"filename": "brief.md"})
+    assert result["result"]["frontmatter"]["subject"] == "Test"
+    assert result["result"]["body"] == "Hallo Welt"
+
+
+@patch("mdo.core.server.core_list_letters", return_value=["brief1.md", "brief2.md"])
+def test_list_letters(mock_list, server):
+    result = _post(server, "list_letters")
+    assert result == {"result": ["brief1.md", "brief2.md"]}
+
+
+@patch("mdo.core.server.core_delete_letter")
+def test_delete_letter(mock_del, server):
+    result = _post(server, "delete_letter", {"filename": "brief.md"})
+    assert result == {"result": "ok"}
+
+
 @patch("mdo.core.server.core_compile")
 def test_compile(mock_compile, server):
     from pathlib import Path
