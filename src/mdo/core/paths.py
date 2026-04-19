@@ -8,6 +8,21 @@ PACKAGE_NAME = "din5008a"
 FALLBACK_VERSION = "0.1.1"
 
 
+def mdo_base_dir() -> Path:
+    """Return the mdo base directory (~/.mdo)."""
+    return Path.home() / ".mdo"
+
+
+def profiles_dir() -> Path:
+    """Return the mdo profiles directory (~/.mdo/profiles)."""
+    return mdo_base_dir() / "profiles"
+
+
+def fonts_dir() -> Path:
+    """Return the mdo fonts directory (~/.mdo/fonts)."""
+    return mdo_base_dir() / "fonts"
+
+
 def typst_packages_dir() -> Path:
     """Return the local Typst packages directory for the current OS."""
     system = platform.system()

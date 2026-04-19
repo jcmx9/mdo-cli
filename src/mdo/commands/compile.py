@@ -8,10 +8,10 @@ import typer
 import yaml
 from pydantic import ValidationError
 
-from mdo.commands.install_fonts import mdo_fonts_dir
 from mdo.core.fonts import FONT_HELP_URL, check_fonts
 from mdo.core.markdown import md_to_typst
 from mdo.core.models import LetterData
+from mdo.core.paths import fonts_dir
 from mdo.core.typst_builder import build_typst_files
 
 logger = logging.getLogger(__name__)
@@ -91,8 +91,8 @@ def compile_letter(
         raise typer.Exit(1)
 
     # Font check
-    logger.debug("Checking fonts in %s", mdo_fonts_dir())
-    missing = check_fonts(mdo_fonts_dir())
+    logger.debug("Checking fonts in %s", fonts_dir())
+    missing = check_fonts(fonts_dir())
     if missing:
         typer.echo(f"Error: Missing system fonts: {', '.join(missing)}", err=True)
         typer.echo(f"Install static font variants. See requirements: {FONT_HELP_URL}", err=True)
@@ -153,7 +153,7 @@ def compile_letter(
 
         logger.debug("Compiling %s to PDF/A-2b", typ_path)
         typst_cmd = ["typst", "compile", "--pdf-standard", "a-2b"]
-        fonts_path = mdo_fonts_dir()
+        fonts_path = fonts_dir()
         if fonts_path.exists():
             typst_cmd.extend(["--font-path", str(fonts_path)])
         typst_cmd.extend([str(typ_path), str(pdf_path)])

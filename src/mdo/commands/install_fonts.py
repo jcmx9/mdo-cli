@@ -6,6 +6,8 @@ from pathlib import Path
 
 import typer
 
+from mdo.core.paths import fonts_dir
+
 logger = logging.getLogger(__name__)
 
 FONTS = [
@@ -33,11 +35,6 @@ FONTS = [
 ]
 
 
-def mdo_fonts_dir() -> Path:
-    """Return the mdo-specific fonts directory."""
-    return Path.home() / ".local" / "share" / "mdo" / "fonts"
-
-
 def _get_download_url(repo: str, prefix: str, suffix: str) -> str | None:
     """Get the download URL for the latest release asset matching prefix/suffix."""
     import json
@@ -62,9 +59,9 @@ def _get_download_url(repo: str, prefix: str, suffix: str) -> str | None:
 
 def install_fonts() -> None:
     """Download and install required fonts for the din5008a template."""
-    fonts_dir = mdo_fonts_dir()
-    fonts_dir.mkdir(parents=True, exist_ok=True)
-    logger.debug("Font target directory: %s", fonts_dir)
+    target_dir = fonts_dir()
+    target_dir.mkdir(parents=True, exist_ok=True)
+    logger.debug("Font target directory: %s", target_dir)
 
     for font in FONTS:
         typer.echo(f"Downloading {font['name']} ...")
@@ -93,10 +90,10 @@ def install_fonts() -> None:
                 for entry in zf.namelist():
                     entry_path = Path(entry)
                     if entry_path.suffix.lower() == ".otf" and entry_path.match(font["glob"]):
-                        dest = fonts_dir / entry_path.name
+                        dest = target_dir / entry_path.name
                         dest.write_bytes(zf.read(entry))
                         installed += 1
 
-            typer.echo(f"  Installed {installed} fonts to {fonts_dir}")
+            typer.echo(f"  Installed {installed} fonts to {target_dir}")
 
     typer.echo("Done.")
