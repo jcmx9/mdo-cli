@@ -1,0 +1,72 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
+/// HTTP-Client zum lokalen Python-Backend.
+class MdoEngine {
+  final int port;
+  final http.Client _client;
+
+  MdoEngine({required this.port, http.Client? client})
+      : _client = client ?? http.Client();
+
+  String get _baseUrl => 'http://127.0.0.1:$port';
+
+  /// Prüft ob der Server erreichbar ist.
+  Future<bool> isHealthy() async {
+    try {
+      final response = await _client.get(Uri.parse('$_baseUrl/health'));
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        return data['status'] == 'ok';
+      }
+      return false;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Sendet einen JSON-RPC-Aufruf an den Server.
+  Future<dynamic> call(String method, Map<String, dynamic> params) async {
+    final response = await _client.post(
+      Uri.parse('$_baseUrl/rpc'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'method': method, 'params': params}),
+    );
+
+    final data = jsonDecode(response.body) as Map<String, dynamic>;
+
+    if (data.containsKey('error')) {
+      throw Exception(data['error']);
+    }
+
+    return data['result'];
+  }
+
+  /// Gibt alle Profilnamen zurück.
+  Future<List<String>> listProfiles() async {
+    final result = await call('list_profiles', {});
+    return (result as List).cast<String>();
+  }
+
+  /// Lädt ein Profil als Map.
+  Future<Map<String, dynamic>> loadProfile(String name) async {
+    final result = await call('load_profile', {'name': name});
+    return result as Map<String, dynamic>;
+  }
+
+  /// Gibt die installierte Template-Version zurück.
+  Future<String?> getTemplateVersion() async {
+    final result = await call('get_template_version', {});
+    return result as String?;
+  }
+
+  /// Kompiliert eine .md-Datei zu PDF.
+  Future<String> compile(String path) async {
+    final result = await call('compile', {'path': path});
+    return (result as Map<String, dynamic>)['pdf_path'] as String;
+  }
+
+  void dispose() {
+    _client.close();
+  }
+}
