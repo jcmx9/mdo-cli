@@ -23,6 +23,11 @@ def fonts_dir() -> Path:
     return mdo_base_dir() / "fonts"
 
 
+def letters_dir() -> Path:
+    """Return the letters directory (~/.mdo/letters/)."""
+    return mdo_base_dir() / "letters"
+
+
 def typst_packages_dir() -> Path:
     """Return the local Typst packages directory for the current OS."""
     system = platform.system()
