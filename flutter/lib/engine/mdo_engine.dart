@@ -61,9 +61,21 @@ class MdoEngine {
   }
 
   /// Kompiliert eine .md-Datei zu PDF.
-  Future<String> compile(String path) async {
-    final result = await call('compile', {'path': path});
+  Future<String> compile(String path, {String? outputDir}) async {
+    final result = await call('compile', {
+      'path': path,
+      if (outputDir != null) 'output_dir': outputDir,
+    });
     return (result as Map<String, dynamic>)['pdf_path'] as String;
+  }
+
+  /// Kopiert eine Signatur-Datei nach ~/.mdo/unterschrift_PROFILNAME.ext.
+  Future<String> copySignature(String sourcePath, String profileName) async {
+    final result = await call('copy_signature', {
+      'source': sourcePath,
+      'profile_name': profileName,
+    });
+    return result as String;
   }
 
   /// Speichert einen Brief.

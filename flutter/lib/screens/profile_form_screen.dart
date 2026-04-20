@@ -1,3 +1,4 @@
+import 'package:desktop_drop/desktop_drop.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -20,6 +21,8 @@ class _ProfileFormScreenState extends ConsumerState<ProfileFormScreen> {
   bool _signature = true;
   bool _loading = true;
   bool _saving = false;
+  bool _dragging = false;
+  String? _signaturePath;
 
   static const _fields = [
     ('name', 'Name'),
@@ -175,6 +178,76 @@ class _ProfileFormScreenState extends ConsumerState<ProfileFormScreen> {
               value: _signature,
               onChanged: (v) => setState(() => _signature = v),
             ),
+            if (_signature) ...[
+              const SizedBox(height: 12),
+              DropTarget(
+                onDragEntered: (_) => setState(() => _dragging = true),
+                onDragExited: (_) => setState(() => _dragging = false),
+                onDragDone: (details) async {
+                  setState(() => _dragging = false);
+                  if (details.files.isEmpty) return;
+                  final file = details.files.first;
+                  final ext = file.path.split('.').last.toLowerCase();
+                  if (!['svg', 'png', 'jpg', 'gif'].contains(ext)) {
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                            content: Text(
+                                'Nur SVG, PNG, JPG oder GIF')),
+                      );
+                    }
+                    return;
+                  }
+                  final engine = ref.read(engineProvider);
+                  if (engine == null) return;
+                  try {
+                    final name = widget.profileName ?? 'default';
+                    final path =
+                        await engine.copySignature(file.path, name);
+                    setState(() => _signaturePath = path);
+                  } catch (e) {
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Fehler: $e')),
+                      );
+                    }
+                  }
+                },
+                child: Container(
+                  height: 80,
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: _dragging
+                          ? Theme.of(context).colorScheme.primary
+                          : Colors.grey,
+                      width: _dragging ? 2 : 1,
+                      style: _dragging
+                          ? BorderStyle.solid
+                          : BorderStyle.none,
+                    ),
+                    borderRadius: BorderRadius.circular(8),
+                    color: _dragging
+                        ? Theme.of(context)
+                            .colorScheme
+                            .primary
+                            .withValues(alpha: 0.1)
+                        : Colors.grey.withValues(alpha: 0.05),
+                  ),
+                  child: Center(
+                    child: _signaturePath != null
+                        ? Text(
+                            'Unterschrift: ${_signaturePath!.split('/').last}',
+                            style: const TextStyle(color: Colors.green),
+                          )
+                        : const Text(
+                            'Unterschrift-Datei hierher ziehen\n(SVG, PNG, JPG, GIF)',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: Colors.grey),
+                          ),
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       ),

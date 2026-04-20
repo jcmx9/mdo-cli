@@ -1,4 +1,6 @@
 PODS:
+  - desktop_drop (0.0.1):
+    - FlutterMacOS
   - FlutterMacOS (1.0.0)
   - pdfium_flutter (0.1.5):
     - Flutter
@@ -10,12 +12,15 @@ PODS:
     - FlutterMacOS
 
 DEPENDENCIES:
+  - desktop_drop (from `Flutter/ephemeral/.symlinks/plugins/desktop_drop/macos`)
   - FlutterMacOS (from `Flutter/ephemeral`)
   - pdfium_flutter (from `Flutter/ephemeral/.symlinks/plugins/pdfium_flutter/darwin`)
   - serious_python_darwin (from `Flutter/ephemeral/.symlinks/plugins/serious_python_darwin/darwin`)
   - url_launcher_macos (from `Flutter/ephemeral/.symlinks/plugins/url_launcher_macos/macos`)
 
 EXTERNAL SOURCES:
+  desktop_drop:
+    :path: Flutter/ephemeral/.symlinks/plugins/desktop_drop/macos
   FlutterMacOS:
     :path: Flutter/ephemeral
   pdfium_flutter:
@@ -26,6 +31,7 @@ EXTERNAL SOURCES:
     :path: Flutter/ephemeral/.symlinks/plugins/url_launcher_macos/macos
 
 SPEC CHECKSUMS:
+  desktop_drop: e0b672a7d84c0a6cbc378595e82cdb15f2970a43
   FlutterMacOS: d0db08ddef1a9af05a5ec4b724367152bb0500b1
   pdfium_flutter: 512bc19dbbd80b4287d04869aa19ad729289079d
   serious_python_darwin: baf0e5e3f2d7e2d052a8810c2abcdf4a50238183

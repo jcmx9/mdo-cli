@@ -13,6 +13,7 @@ from mdo.core.letter import load_letter as core_load_letter
 from mdo.core.letter import save_letter as core_save_letter
 from mdo.core.models import ProfileConfig
 from mdo.core.paths import fonts_dir as core_fonts_dir
+from mdo.core.paths import mdo_base_dir
 from mdo.core.profile import delete_profile as core_delete_profile
 from mdo.core.profile import list_profiles as core_list_profiles
 from mdo.core.profile import load_profile as core_load_profile
@@ -97,8 +98,33 @@ def _handle_install_template(params: dict[str, object]) -> str:
 def _handle_compile(params: dict[str, object]) -> dict[str, object]:
     path = Path(str(params["path"]))
     keep_typ = bool(params.get("keep_typ", False))
+    output_dir = params.get("output_dir")
     pdf_path, data = core_compile(path, keep_typ=keep_typ)
+    # PDF ins Ausgabeverzeichnis verschieben
+    if output_dir and pdf_path.exists():
+        target_dir = Path(str(output_dir))
+        target_dir.mkdir(parents=True, exist_ok=True)
+        final_path = target_dir / pdf_path.name
+        import shutil
+
+        shutil.move(str(pdf_path), str(final_path))
+        pdf_path = final_path
     return {"pdf_path": str(pdf_path), "subject": data.subject, "date": data.date}
+
+
+def _handle_copy_signature(params: dict[str, object]) -> str:
+    """Kopiere eine Signatur-Datei nach ~/.mdo/unterschrift_PROFILNAME.ext."""
+    source = Path(str(params["source"]))
+    profile_name = str(params.get("profile_name", "default"))
+    if not source.exists():
+        msg = f"File not found: {source}"
+        raise FileNotFoundError(msg)
+    ext = source.suffix
+    target = mdo_base_dir() / f"unterschrift_{profile_name}{ext}"
+    import shutil
+
+    shutil.copy2(str(source), str(target))
+    return str(target)
 
 
 METHODS: dict[str, object] = {
@@ -115,6 +141,7 @@ METHODS: dict[str, object] = {
     "load_letter": _handle_load_letter,
     "list_letters": _handle_list_letters,
     "delete_letter": _handle_delete_letter,
+    "copy_signature": _handle_copy_signature,
 }
 
 

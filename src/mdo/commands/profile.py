@@ -22,6 +22,7 @@ def profile_callback(ctx: typer.Context) -> None:
     if ctx.invoked_subcommand is None:
         create(name="default")
 
+
 PROFILE_FIELDS = [
     ("name", "Name", "Max Mustermann"),
     ("street", "Strasse", "Musterstrasse 1"),

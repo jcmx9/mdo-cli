@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -124,7 +126,9 @@ class _LetterEditorScreenState extends ConsumerState<LetterEditorScreen>
         body: _bodyController.text,
         filename: widget.filename,
       );
-      final pdfPath = await engine.compile(savedPath);
+      // PDF auf den Desktop ausgeben
+      final desktop = '${Platform.environment['HOME']}/Desktop';
+      final pdfPath = await engine.compile(savedPath, outputDir: desktop);
       ref.invalidate(letterListProvider);
       if (mounted) {
         context.push('/pdf/${Uri.encodeComponent(pdfPath)}');
