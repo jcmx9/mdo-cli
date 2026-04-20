@@ -33,6 +33,13 @@ def test_profiles_dir() -> None:
     assert result == mdo_base_dir() / "profiles"
 
 
-def test_fonts_dir() -> None:
+def test_fonts_dir_default() -> None:
+    result = fonts_dir()
+    # Gibt ~/.mdo/fonts/ zurück (oder den Legacy-Pfad falls der existiert)
+    assert result.name == "fonts"
+
+
+@patch("mdo.core.paths.Path.exists", return_value=False)
+def test_fonts_dir_no_existing(mock_exists: object) -> None:
     result = fonts_dir()
     assert result == mdo_base_dir() / "fonts"

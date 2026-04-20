@@ -12,8 +12,15 @@ logger = logging.getLogger(__name__)
 profile_app = typer.Typer(
     name="profile",
     help="Absenderprofile verwalten.",
-    no_args_is_help=True,
+    invoke_without_command=True,
 )
+
+
+@profile_app.callback()
+def profile_callback(ctx: typer.Context) -> None:
+    """Absenderprofile verwalten. Ohne Subcommand: neues Profil anlegen."""
+    if ctx.invoked_subcommand is None:
+        create(name="default")
 
 PROFILE_FIELDS = [
     ("name", "Name", "Max Mustermann"),

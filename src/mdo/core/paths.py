@@ -19,8 +19,17 @@ def profiles_dir() -> Path:
 
 
 def fonts_dir() -> Path:
-    """Return the mdo fonts directory (~/.mdo/fonts)."""
-    return mdo_base_dir() / "fonts"
+    """Return the mdo fonts directory.
+
+    Checks ~/.mdo/fonts/ first, falls back to legacy ~/.local/share/mdo/fonts/.
+    """
+    new_path = mdo_base_dir() / "fonts"
+    if new_path.exists():
+        return new_path
+    legacy_path = Path.home() / ".local" / "share" / "mdo" / "fonts"
+    if legacy_path.exists():
+        return legacy_path
+    return new_path
 
 
 def letters_dir() -> Path:
