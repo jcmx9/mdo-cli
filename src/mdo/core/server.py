@@ -6,16 +6,19 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 
 from mdo.core.compiler import compile_letter as core_compile
+from mdo.core.fonts import check_fonts as core_check_fonts
 from mdo.core.letter import delete_letter as core_delete_letter
 from mdo.core.letter import list_letters as core_list_letters
 from mdo.core.letter import load_letter as core_load_letter
 from mdo.core.letter import save_letter as core_save_letter
 from mdo.core.models import ProfileConfig
+from mdo.core.paths import fonts_dir as core_fonts_dir
 from mdo.core.profile import delete_profile as core_delete_profile
 from mdo.core.profile import list_profiles as core_list_profiles
 from mdo.core.profile import load_profile as core_load_profile
 from mdo.core.profile import save_profile as core_save_profile
 from mdo.core.template import get_installed_version as core_get_version
+from mdo.core.template import install_template as core_install_template
 
 logger = logging.getLogger(__name__)
 
@@ -73,6 +76,24 @@ def _handle_delete_letter(params: dict[str, object]) -> str:
     return "ok"
 
 
+def _handle_check_fonts(params: dict[str, object]) -> dict[str, object]:
+    missing = core_check_fonts(core_fonts_dir())
+    return {"missing": missing, "installed": len(missing) == 0}
+
+
+def _handle_install_fonts(params: dict[str, object]) -> str:
+    from mdo.commands.install_fonts import install_fonts as cli_install_fonts
+
+    cli_install_fonts()
+    return "ok"
+
+
+def _handle_install_template(params: dict[str, object]) -> str:
+    method = str(params.get("method", "auto"))
+    path = core_install_template(method=method)
+    return str(path)
+
+
 def _handle_compile(params: dict[str, object]) -> dict[str, object]:
     path = Path(str(params["path"]))
     keep_typ = bool(params.get("keep_typ", False))
@@ -86,6 +107,9 @@ METHODS: dict[str, object] = {
     "save_profile": _handle_save_profile,
     "delete_profile": _handle_delete_profile,
     "get_template_version": _handle_get_template_version,
+    "check_fonts": _handle_check_fonts,
+    "install_fonts": _handle_install_fonts,
+    "install_template": _handle_install_template,
     "compile": _handle_compile,
     "save_letter": _handle_save_letter,
     "load_letter": _handle_load_letter,

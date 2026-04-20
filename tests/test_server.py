@@ -108,6 +108,28 @@ def test_delete_letter(mock_del, server):
     assert result == {"result": "ok"}
 
 
+@patch("mdo.core.server.core_check_fonts", return_value=[])
+def test_check_fonts_ok(mock_check, server):
+    result = _post(server, "check_fonts")
+    assert result == {"result": {"missing": [], "installed": True}}
+
+
+@patch("mdo.core.server.core_check_fonts", return_value=["Source Serif 4"])
+def test_check_fonts_missing(mock_check, server):
+    result = _post(server, "check_fonts")
+    assert result["result"]["installed"] is False
+    assert "Source Serif 4" in result["result"]["missing"]
+
+
+@patch("mdo.core.server.core_install_template")
+def test_install_template_via_server(mock_install, server):
+    from pathlib import Path
+
+    mock_install.return_value = Path("/tmp/packages/din5008a/0.3.0")
+    result = _post(server, "install_template")
+    assert "0.3.0" in result["result"]
+
+
 @patch("mdo.core.server.core_compile")
 def test_compile(mock_compile, server):
     from pathlib import Path
