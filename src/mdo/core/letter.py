@@ -20,9 +20,12 @@ def _build_frontmatter(data: dict[str, object]) -> str:
         elif isinstance(value, bool):
             lines.append(f"{key}: {'true' if value else 'false'}")
         elif isinstance(value, list):
-            lines.append(f"{key}:")
-            for item in value:
-                lines.append(f"  - {item}")
+            if not value:
+                lines.append(f"{key}: []")
+            else:
+                lines.append(f"{key}:")
+                for item in value:
+                    lines.append(f"  - {item}")
         elif isinstance(value, str) and value.startswith("#"):
             lines.append(f'{key}: "{value}"')
         else:
