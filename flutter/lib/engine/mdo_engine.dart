@@ -97,6 +97,23 @@ class MdoEngine {
     await call('delete_letter', {'filename': filename});
   }
 
+  /// Prüft den Font-Status.
+  Future<Map<String, dynamic>> checkFonts() async {
+    final result = await call('check_fonts', {});
+    return result as Map<String, dynamic>;
+  }
+
+  /// Installiert fehlende Fonts.
+  Future<void> installFonts() async {
+    await call('install_fonts', {});
+  }
+
+  /// Aktualisiert das Typst-Template.
+  Future<String> installTemplate() async {
+    final result = await call('install_template', {});
+    return result as String;
+  }
+
   void dispose() {
     _client.close();
   }

@@ -21,6 +21,11 @@ class LetterListScreen extends ConsumerWidget {
             tooltip: 'Profile',
             onPressed: () => context.push('/profiles'),
           ),
+          IconButton(
+            icon: const Icon(Icons.settings),
+            tooltip: 'Einstellungen',
+            onPressed: () => context.push('/settings'),
+          ),
           Padding(
             padding: const EdgeInsets.only(right: 8),
             child: Icon(

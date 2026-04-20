@@ -54,6 +54,14 @@ void main() {
           };
         } else if (method == 'delete_letter') {
           response = {'result': 'ok'};
+        } else if (method == 'check_fonts') {
+          response = {
+            'result': {'missing': [], 'installed': true}
+          };
+        } else if (method == 'install_fonts') {
+          response = {'result': 'ok'};
+        } else if (method == 'install_template') {
+          response = {'result': '/tmp/din5008a/0.3.0'};
         } else {
           response = {'error': 'Unknown method: $method'};
         }
@@ -115,6 +123,17 @@ void main() {
     final result = await engine.loadLetter('brief.md');
     expect((result['frontmatter'] as Map)['subject'], equals('Test'));
     expect(result['body'], equals('Hallo Welt'));
+  });
+
+  test('checkFonts returns status', () async {
+    final result = await engine.checkFonts();
+    expect(result['installed'], isTrue);
+    expect(result['missing'], isEmpty);
+  });
+
+  test('installTemplate returns path', () async {
+    final path = await engine.installTemplate();
+    expect(path, contains('0.3.0'));
   });
 
   test('call with unknown method throws exception', () async {

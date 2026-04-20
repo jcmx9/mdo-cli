@@ -5,6 +5,7 @@ import 'package:mdo_app/screens/letter_list_screen.dart';
 import 'package:mdo_app/screens/pdf_preview_screen.dart';
 import 'package:mdo_app/screens/profile_form_screen.dart';
 import 'package:mdo_app/screens/profile_list_screen.dart';
+import 'package:mdo_app/screens/settings_screen.dart';
 
 final router = GoRouter(
   routes: [
@@ -35,6 +36,10 @@ final router = GoRouter(
       builder: (context, state) => LetterEditorScreen(
         filename: state.pathParameters['filename'],
       ),
+    ),
+    GoRoute(
+      path: '/settings',
+      builder: (context, state) => const SettingsScreen(),
     ),
     GoRoute(
       path: '/pdf/:path',
