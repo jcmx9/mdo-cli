@@ -93,16 +93,18 @@ class _ProfileFormScreenState extends ConsumerState<ProfileFormScreen> {
       final name = widget.profileName ?? 'default';
       await engine.call('save_profile', {'name': name, 'data': data});
       ref.invalidate(profileListProvider);
-      if (mounted) context.pop();
+      if (mounted) {
+        context.pop();
+        return;
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Fehler: $e')),
         );
       }
-    } finally {
-      setState(() => _saving = false);
     }
+    if (mounted) setState(() => _saving = false);
   }
 
   @override

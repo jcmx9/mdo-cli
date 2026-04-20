@@ -10,6 +10,10 @@ import 'package:mdo_app/engine/mdo_engine.dart';
 import 'package:mdo_app/providers/engine_provider.dart';
 
 void main() {
+  FlutterError.onError = (details) {
+    FlutterError.presentError(details);
+  };
+
   runApp(
     const ProviderScope(
       child: _AppLoader(),
