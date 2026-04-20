@@ -43,3 +43,11 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Bundled binaries (downloaded by scripts/bundle_binaries.sh)
+macos/Runner/Resources/typst
+macos/Runner/Resources/pandoc
+
+# Serious Python packaging artifacts
+/app/
+/_pack/

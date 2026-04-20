@@ -3,7 +3,14 @@
 import os
 import sys
 
+# Serious Python extrahiert den Code in ein Temp-Verzeichnis.
+# Sicherstellen, dass mdo importierbar ist.
 sys.path.insert(0, os.path.dirname(__file__))
+
+# Gebündelte Binaries (typst, pandoc) zum PATH hinzufügen.
+binaries_path = os.environ.get("MDO_BINARIES_PATH", "")
+if binaries_path:
+    os.environ["PATH"] = binaries_path + os.pathsep + os.environ.get("PATH", "")
 
 from mdo.core.server import create_server
 

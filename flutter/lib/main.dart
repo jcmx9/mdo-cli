@@ -17,6 +17,12 @@ void main() {
   );
 }
 
+/// Pfad zum Resources-Verzeichnis im macOS App-Bundle.
+String _resourcesDir() {
+  final execDir = File(Platform.resolvedExecutable).parent.path;
+  return '${Directory(execDir).parent.path}/Resources';
+}
+
 class _AppLoader extends ConsumerStatefulWidget {
   const _AppLoader();
 
@@ -36,9 +42,18 @@ class _AppLoaderState extends ConsumerState<_AppLoader> {
 
   Future<void> _startPythonServer() async {
     try {
-      await SeriousPython.run('python/main.py');
+      // Pfad zu gebündelten Binaries (typst, pandoc)
+      final binPath = _resourcesDir();
 
-      final portFile = File('${Directory.systemTemp.path}/mdo_server_port.txt');
+      await SeriousPython.run(
+        'app/app.zip',
+        environmentVariables: {
+          'MDO_BINARIES_PATH': binPath,
+        },
+      );
+
+      final portFile =
+          File('${Directory.systemTemp.path}/mdo_server_port.txt');
       int? port;
       for (var i = 0; i < 50; i++) {
         await Future.delayed(const Duration(milliseconds: 100));
