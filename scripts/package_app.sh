@@ -16,15 +16,22 @@ mkdir -p "$PACK_DIR"
 # Copy Python source
 cp -r "$REPO_ROOT/src/mdo" "$PACK_DIR/mdo"
 cp "$FLUTTER_DIR/python/main.py" "$PACK_DIR/main.py"
-cp "$FLUTTER_DIR/python/requirements.txt" "$PACK_DIR/requirements.txt"
+
+# Install dependencies with Serious Python's own Python
+echo "==> Installing Python dependencies..."
+SP_PYTHON="$FLUTTER_DIR/build/build_python_3.12.9/python/bin/python3"
+if [ ! -f "$SP_PYTHON" ]; then
+    echo "Error: Serious Python's Python not found. Run 'dart run serious_python:main package' once first."
+    exit 1
+fi
+"$SP_PYTHON" -m pip install --target "$PACK_DIR" pydantic pyyaml --quiet --disable-pip-version-check
 
 echo "==> Running serious_python packager..."
 
 cd "$FLUTTER_DIR"
 dart run serious_python:main package "$PACK_DIR" \
     -p Darwin \
-    --requirements "pydantic>=2.0" \
-    --requirements "pyyaml>=6.0" \
+    --skip-site-packages \
     --verbose
 
 echo "==> Cleaning up..."

@@ -49,13 +49,15 @@ class _AppLoaderState extends ConsumerState<_AppLoader> {
         'app/app.zip',
         environmentVariables: {
           'MDO_BINARIES_PATH': binPath,
+          'TMPDIR': Directory.systemTemp.path,
         },
+        sync: false,
       );
 
       final portFile =
           File('${Directory.systemTemp.path}/mdo_server_port.txt');
       int? port;
-      for (var i = 0; i < 50; i++) {
+      for (var i = 0; i < 100; i++) {
         await Future.delayed(const Duration(milliseconds: 100));
         if (await portFile.exists()) {
           final content = await portFile.readAsString();
@@ -65,8 +67,14 @@ class _AppLoaderState extends ConsumerState<_AppLoader> {
       }
 
       if (port == null) {
+        // Debug: Prüfe ob Port-Datei existiert
+        final exists = await portFile.exists();
+        final tmpDir = Directory.systemTemp.path;
         setState(() {
-          _error = 'Python-Server konnte nicht gestartet werden.';
+          _error =
+              'Python-Server konnte nicht gestartet werden.\n'
+              'Port-Datei: $tmpDir/mdo_server_port.txt (exists: $exists)\n'
+              'Binaries: $binPath';
           _loading = false;
         });
         return;
@@ -80,9 +88,9 @@ class _AppLoaderState extends ConsumerState<_AppLoader> {
 
       ref.read(engineProvider.notifier).setEngine(engine);
       setState(() => _loading = false);
-    } catch (e) {
+    } catch (e, stackTrace) {
       setState(() {
-        _error = 'Fehler: $e';
+        _error = 'Fehler: $e\n\n$stackTrace';
         _loading = false;
       });
     }
