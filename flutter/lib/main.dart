@@ -63,7 +63,7 @@ class _AppLoaderState extends ConsumerState<_AppLoader> {
         await Future.delayed(const Duration(milliseconds: 100));
       }
 
-      ref.read(engineProvider.notifier).state = engine;
+      ref.read(engineProvider.notifier).setEngine(engine);
       setState(() => _loading = false);
     } catch (e) {
       setState(() {

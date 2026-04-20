@@ -7,3 +7,11 @@ final profileListProvider = FutureProvider<List<String>>((ref) async {
   if (engine == null) return [];
   return engine.listProfiles();
 });
+
+/// Provider für ein einzelnes Profil (parametrisiert).
+final profileProvider =
+    FutureProvider.family<Map<String, dynamic>, String>((ref, name) async {
+  final engine = ref.watch(engineProvider);
+  if (engine == null) return {};
+  return engine.loadProfile(name);
+});
