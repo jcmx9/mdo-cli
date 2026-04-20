@@ -66,6 +66,37 @@ class MdoEngine {
     return (result as Map<String, dynamic>)['pdf_path'] as String;
   }
 
+  /// Speichert einen Brief.
+  Future<String> saveLetter({
+    required Map<String, dynamic> frontmatter,
+    required String body,
+    String? filename,
+  }) async {
+    final result = await call('save_letter', {
+      'frontmatter': frontmatter,
+      'body': body,
+      if (filename != null) 'filename': filename,
+    });
+    return result as String;
+  }
+
+  /// Lädt einen Brief.
+  Future<Map<String, dynamic>> loadLetter(String filename) async {
+    final result = await call('load_letter', {'filename': filename});
+    return result as Map<String, dynamic>;
+  }
+
+  /// Listet alle Briefe auf.
+  Future<List<String>> listLetters() async {
+    final result = await call('list_letters', {});
+    return (result as List).cast<String>();
+  }
+
+  /// Löscht einen Brief.
+  Future<void> deleteLetter(String filename) async {
+    await call('delete_letter', {'filename': filename});
+  }
+
   void dispose() {
     _client.close();
   }

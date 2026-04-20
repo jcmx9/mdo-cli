@@ -39,6 +39,21 @@ void main() {
           };
         } else if (method == 'get_template_version') {
           response = {'result': '0.2.0'};
+        } else if (method == 'list_letters') {
+          response = {
+            'result': ['brief1.md', 'brief2.md']
+          };
+        } else if (method == 'save_letter') {
+          response = {'result': '/tmp/brief.md'};
+        } else if (method == 'load_letter') {
+          response = {
+            'result': {
+              'frontmatter': {'subject': 'Test'},
+              'body': 'Hallo Welt',
+            }
+          };
+        } else if (method == 'delete_letter') {
+          response = {'result': 'ok'};
         } else {
           response = {'error': 'Unknown method: $method'};
         }
@@ -81,6 +96,25 @@ void main() {
   test('getTemplateVersion returns version string', () async {
     final version = await engine.getTemplateVersion();
     expect(version, equals('0.2.0'));
+  });
+
+  test('listLetters returns filenames', () async {
+    final letters = await engine.listLetters();
+    expect(letters, equals(['brief1.md', 'brief2.md']));
+  });
+
+  test('saveLetter returns path', () async {
+    final path = await engine.saveLetter(
+      frontmatter: {'subject': 'Test'},
+      body: 'Hallo Welt',
+    );
+    expect(path, contains('brief.md'));
+  });
+
+  test('loadLetter returns frontmatter and body', () async {
+    final result = await engine.loadLetter('brief.md');
+    expect((result['frontmatter'] as Map)['subject'], equals('Test'));
+    expect(result['body'], equals('Hallo Welt'));
   });
 
   test('call with unknown method throws exception', () async {
