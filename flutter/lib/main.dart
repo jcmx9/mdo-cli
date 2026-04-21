@@ -49,6 +49,13 @@ class _AppLoaderState extends ConsumerState<_AppLoader> {
       // Pfad zu gebündelten Binaries (typst, pandoc)
       final binPath = _resourcesDir();
 
+      // Alte Port-Datei löschen bevor Python startet
+      final portFile =
+          File('${Directory.systemTemp.path}/mdo_server_port.txt');
+      if (await portFile.exists()) {
+        await portFile.delete();
+      }
+
       await SeriousPython.run(
         'app/app.zip',
         environmentVariables: {
@@ -57,9 +64,6 @@ class _AppLoaderState extends ConsumerState<_AppLoader> {
         },
         sync: false,
       );
-
-      final portFile =
-          File('${Directory.systemTemp.path}/mdo_server_port.txt');
       int? port;
       for (var i = 0; i < 100; i++) {
         await Future.delayed(const Duration(milliseconds: 100));
