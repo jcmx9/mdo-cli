@@ -107,20 +107,21 @@ def list_profiles() -> list[str]:
 
 
 def delete_profile(name: str) -> None:
-    """Delete a profile directory. Cannot delete 'default'."""
-    if name == "default":
-        msg = "Cannot delete the default profile"
-        raise ValueError(msg)
+    """Delete a profile directory."""
     target = profile_dir(name)
-    if target.is_dir():
-        shutil.rmtree(target)
-    else:
-        # Legacy
+    if not target.is_dir():
         legacy = profiles_dir() / f"{name}.yaml"
         if not legacy.exists():
             msg = f"Profile not found: {name}"
             raise FileNotFoundError(msg)
         legacy.unlink()
+        logger.debug("Profile deleted: %s", name)
+        return
+    remaining = list_profiles()
+    if len(remaining) <= 1:
+        msg = "Cannot delete the last profile"
+        raise ValueError(msg)
+    shutil.rmtree(target)
     logger.debug("Profile deleted: %s", name)
 
 

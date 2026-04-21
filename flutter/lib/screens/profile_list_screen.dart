@@ -32,7 +32,7 @@ class ProfileListScreen extends ConsumerWidget {
               return ListTile(
                 leading: const Icon(Icons.person),
                 title: Text(name),
-                trailing: name != 'default'
+                trailing: profiles.length > 1
                     ? IconButton(
                         icon: const Icon(Icons.delete),
                         onPressed: () async {

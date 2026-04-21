@@ -79,17 +79,22 @@ class TestListProfiles:
 @pytest.mark.usefixtures("_mock_profiles_dir")
 class TestDeleteProfile:
     def test_delete_existing(self, profiles_path: Path, sample_profile: ProfileConfig) -> None:
+        save_profile(sample_profile, name="default")
         save_profile(sample_profile, name="temp")
         delete_profile("temp")
         assert not (profiles_path / "temp").exists()
 
-    def test_delete_nonexistent_raises(self) -> None:
+    def test_delete_nonexistent_raises(
+        self, profiles_path: Path, sample_profile: ProfileConfig
+    ) -> None:
+        save_profile(sample_profile, name="default")
+        save_profile(sample_profile, name="other")
         with pytest.raises(FileNotFoundError):
             delete_profile("nonexistent")
 
-    def test_delete_default_raises(
+    def test_delete_last_profile_raises(
         self, profiles_path: Path, sample_profile: ProfileConfig
     ) -> None:
         save_profile(sample_profile)
-        with pytest.raises(ValueError, match="default"):
+        with pytest.raises(ValueError, match="last"):
             delete_profile("default")

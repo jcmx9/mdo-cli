@@ -104,6 +104,8 @@ def test_profile_delete(mock_dir: object, tmp_path: Path) -> None:
     profiles_path = tmp_path / "profiles"
     profiles_path.mkdir()
     mock_dir.return_value = profiles_path  # type: ignore[union-attr]
+    (profiles_path / "default").mkdir()
+    (profiles_path / "default" / "profile.yaml").write_text("name: Default\n")
     (profiles_path / "temp").mkdir()
     (profiles_path / "temp" / "profile.yaml").write_text("name: Temp\n")
     result = runner.invoke(app, ["profile", "delete", "temp"])
@@ -113,7 +115,7 @@ def test_profile_delete(mock_dir: object, tmp_path: Path) -> None:
 
 
 @patch("mdo.core.profile.profiles_dir")
-def test_profile_delete_default_fails(mock_dir: object, tmp_path: Path) -> None:
+def test_profile_delete_last_fails(mock_dir: object, tmp_path: Path) -> None:
     profiles_path = tmp_path / "profiles"
     profiles_path.mkdir()
     mock_dir.return_value = profiles_path  # type: ignore[union-attr]
@@ -121,3 +123,4 @@ def test_profile_delete_default_fails(mock_dir: object, tmp_path: Path) -> None:
     (profiles_path / "default" / "profile.yaml").write_text("name: Default\n")
     result = runner.invoke(app, ["profile", "delete", "default"])
     assert result.exit_code != 0
+    assert "last" in result.output.lower() or "letzt" in result.output.lower()

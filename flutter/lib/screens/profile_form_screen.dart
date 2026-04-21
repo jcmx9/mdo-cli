@@ -16,6 +16,7 @@ class ProfileFormScreen extends ConsumerStatefulWidget {
 
 class _ProfileFormScreenState extends ConsumerState<ProfileFormScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _profileNameController = TextEditingController();
   final _controllers = <String, TextEditingController>{};
   bool _qrCode = false;
   bool _signature = true;
@@ -23,9 +24,10 @@ class _ProfileFormScreenState extends ConsumerState<ProfileFormScreen> {
   bool _saving = false;
   bool _dragging = false;
   String? _signaturePath;
+  List<String> _existingProfiles = [];
 
   static const _fields = [
-    ('name', 'Name'),
+    ('name', 'Absendername'),
     ('street', 'Strasse'),
     ('zip', 'PLZ'),
     ('city', 'Ort'),
@@ -38,6 +40,8 @@ class _ProfileFormScreenState extends ConsumerState<ProfileFormScreen> {
     ('closing', 'Schlussgruss'),
   ];
 
+  bool get _isEdit => widget.profileName != null;
+
   @override
   void initState() {
     super.initState();
@@ -45,30 +49,49 @@ class _ProfileFormScreenState extends ConsumerState<ProfileFormScreen> {
       _controllers[key] = TextEditingController();
     }
     _controllers['closing']!.text = 'Mit freundlichem Gruß';
-    _loadProfile();
+    if (_isEdit) {
+      _profileNameController.text = widget.profileName!;
+    }
+    _loadData();
   }
 
-  Future<void> _loadProfile() async {
-    if (widget.profileName == null) {
-      setState(() => _loading = false);
-      return;
-    }
+  Future<void> _loadData() async {
     final engine = ref.read(engineProvider);
     if (engine == null) return;
+
     try {
-      final data = await engine.loadProfile(widget.profileName!);
-      for (final (key, _) in _fields) {
-        final value = data[key];
-        if (value != null) _controllers[key]!.text = value.toString();
-      }
-      setState(() {
+      _existingProfiles = await engine.listProfiles();
+
+      if (_isEdit) {
+        final data = await engine.loadProfile(widget.profileName!);
+        for (final (key, _) in _fields) {
+          final value = data[key];
+          if (value != null) _controllers[key]!.text = value.toString();
+        }
         _qrCode = data['qr_code'] == true;
         _signature = data['signature'] != false;
-        _loading = false;
-      });
-    } catch (e) {
-      setState(() => _loading = false);
+
+        // Unterschrift-Pfad laden
+        final sig = await engine.findSignature(widget.profileName!);
+        if (sig != null) _signaturePath = sig;
+      }
+    } catch (_) {}
+    setState(() => _loading = false);
+  }
+
+  String? _validateProfileName(String? value) {
+    if (value == null || value.trim().isEmpty) return 'Pflichtfeld';
+    final name = value.trim().toLowerCase();
+    if (RegExp(r'[^a-z0-9_-]').hasMatch(name)) {
+      return 'Nur Kleinbuchstaben, Zahlen, - und _';
     }
+    // Doppelte Namen verhindern (außer beim Bearbeiten des eigenen Namens)
+    if (!_isEdit || value.trim() != widget.profileName) {
+      if (_existingProfiles.contains(value.trim())) {
+        return 'Profil "$value" existiert bereits';
+      }
+    }
+    return null;
   }
 
   Future<void> _save() async {
@@ -92,9 +115,22 @@ class _ProfileFormScreenState extends ConsumerState<ProfileFormScreen> {
     data['open'] = true;
     data['reveal'] = true;
 
+    final newName = _profileNameController.text.trim();
+
     try {
-      final name = widget.profileName ?? 'default';
-      await engine.call('save_profile', {'name': name, 'data': data});
+      // Speichern unter neuem Namen
+      await engine.call('save_profile', {'name': newName, 'data': data});
+
+      // Bei Umbenennung: altes Profil löschen
+      if (_isEdit && widget.profileName != newName) {
+        try {
+          await engine.call(
+              'delete_profile', {'name': widget.profileName});
+        } catch (_) {
+          // Altes Profil konnte nicht gelöscht werden — nicht schlimm
+        }
+      }
+
       ref.invalidate(profileListProvider);
       if (mounted) {
         context.pop();
@@ -112,6 +148,7 @@ class _ProfileFormScreenState extends ConsumerState<ProfileFormScreen> {
 
   @override
   void dispose() {
+    _profileNameController.dispose();
     for (final c in _controllers.values) {
       c.dispose();
     }
@@ -120,19 +157,17 @@ class _ProfileFormScreenState extends ConsumerState<ProfileFormScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isEdit = widget.profileName != null;
-
     if (_loading) {
       return Scaffold(
         appBar: AppBar(
-            title: Text(isEdit ? 'Profil bearbeiten' : 'Neues Profil')),
+            title: Text(_isEdit ? 'Profil bearbeiten' : 'Neues Profil')),
         body: const Center(child: CircularProgressIndicator()),
       );
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isEdit ? 'Profil bearbeiten' : 'Neues Profil'),
+        title: Text(_isEdit ? 'Profil bearbeiten' : 'Neues Profil'),
         actions: [
           if (_saving)
             const Padding(
@@ -151,6 +186,22 @@ class _ProfileFormScreenState extends ConsumerState<ProfileFormScreen> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
+            // Profilname (Verzeichnisname)
+            TextFormField(
+              controller: _profileNameController,
+              decoration: const InputDecoration(
+                labelText: 'Profilname',
+                hintText: 'z.B. privat, geschaeftlich',
+                border: OutlineInputBorder(),
+                helperText: 'Interner Name (Kleinbuchstaben, keine Leerzeichen)',
+              ),
+              validator: _validateProfileName,
+            ),
+            const SizedBox(height: 16),
+            const Divider(),
+            const SizedBox(height: 8),
+
+            // Absenderdaten
             for (final (key, label) in _fields)
               Padding(
                 padding: const EdgeInsets.only(bottom: 12),
@@ -192,8 +243,7 @@ class _ProfileFormScreenState extends ConsumerState<ProfileFormScreen> {
                     if (mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                            content: Text(
-                                'Nur SVG, PNG, JPG oder GIF')),
+                            content: Text('Nur SVG, PNG, JPG oder GIF')),
                       );
                     }
                     return;
@@ -201,7 +251,9 @@ class _ProfileFormScreenState extends ConsumerState<ProfileFormScreen> {
                   final engine = ref.read(engineProvider);
                   if (engine == null) return;
                   try {
-                    final name = widget.profileName ?? 'default';
+                    final name = _profileNameController.text.trim().isEmpty
+                        ? 'default'
+                        : _profileNameController.text.trim();
                     final path =
                         await engine.saveSignature(file.path, name);
                     setState(() => _signaturePath = path);
@@ -221,9 +273,6 @@ class _ProfileFormScreenState extends ConsumerState<ProfileFormScreen> {
                           ? Theme.of(context).colorScheme.primary
                           : Colors.grey,
                       width: _dragging ? 2 : 1,
-                      style: _dragging
-                          ? BorderStyle.solid
-                          : BorderStyle.none,
                     ),
                     borderRadius: BorderRadius.circular(8),
                     color: _dragging
