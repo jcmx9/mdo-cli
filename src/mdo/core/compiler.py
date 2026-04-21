@@ -94,18 +94,49 @@ def _check_tool(name: str) -> None:
 
 
 def _resolve_signature(data: LetterData, letter_dir: Path) -> None:
-    """Resolve signature field: True -> auto-detect, string -> verify exists."""
+    """Resolve signature field: True -> auto-detect, string -> verify exists.
+
+    Searches in letter_dir first, then in profile directories.
+    """
     if data.signature is True:
         found = None
+        # Suche im Brief-Verzeichnis
         for ext in ("svg", "png", "jpg", "gif"):
             candidate = letter_dir / f"unterschrift.{ext}"
             if candidate.exists():
-                found = str(candidate.name)
+                found = str(candidate)
                 break
+        # Suche in den Profil-Verzeichnissen
+        if found is None:
+            from mdo.core.paths import profiles_dir
+
+            pdir = profiles_dir()
+            if pdir.exists():
+                for profile in sorted(pdir.iterdir()):
+                    if not profile.is_dir():
+                        continue
+                    for ext in ("svg", "png", "jpg", "gif"):
+                        for candidate in profile.glob(f"unterschrift*.{ext}"):
+                            found = str(candidate)
+                            break
+                        if found:
+                            break
+                    if found:
+                        break
         data.signature = found
-    elif isinstance(data.signature, str) and not (letter_dir / data.signature).exists():
-        msg = f"Signature file not found: {data.signature}"
-        raise FileNotFoundError(msg)
+    elif isinstance(data.signature, str):
+        sig_path = Path(data.signature)
+        # Absoluter Pfad → direkt prüfen
+        if sig_path.is_absolute():
+            if not sig_path.exists():
+                msg = f"Signature file not found: {data.signature}"
+                raise FileNotFoundError(msg)
+        # Relativer Pfad → im Brief-Verzeichnis suchen
+        elif not (letter_dir / data.signature).exists():
+            msg = f"Signature file not found: {data.signature}"
+            raise FileNotFoundError(msg)
+        else:
+            data.signature = str(letter_dir / data.signature)
 
 
 def compile_letter(

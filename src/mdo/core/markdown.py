@@ -1,4 +1,5 @@
 import logging
+import re
 import subprocess
 
 logger = logging.getLogger(__name__)
@@ -24,4 +25,7 @@ def md_to_typst(text: str) -> str:
         msg = f"pandoc conversion failed:\n{e.stderr}"
         raise RuntimeError(msg) from None
 
-    return result.stdout.rstrip("\n")
+    output = result.stdout.rstrip("\n")
+    # Pandoc generiert <label> Tags nach Headings — entfernen
+    output = re.sub(r"\n<[a-z0-9-]+>", "", output)
+    return output

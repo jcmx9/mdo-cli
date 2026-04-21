@@ -23,8 +23,11 @@ class _LetterEditorScreenState extends ConsumerState<LetterEditorScreen>
   final _recipientController = TextEditingController();
   final _bodyController = TextEditingController();
   final _attachmentsController = TextEditingController();
+  final _dateController = TextEditingController();
   String _selectedProfile = 'default';
+  bool _signature = true;
   bool _loading = true;
+  List<String> _profiles = [];
   Map<String, dynamic> _profileData = {};
 
   @override
@@ -39,10 +42,11 @@ class _LetterEditorScreenState extends ConsumerState<LetterEditorScreen>
     if (engine == null) return;
 
     try {
-      final profiles = await engine.listProfiles();
-      if (profiles.isNotEmpty) {
-        _selectedProfile = profiles.first;
+      _profiles = await engine.listProfiles();
+      if (_profiles.isNotEmpty) {
+        _selectedProfile = _profiles.first;
         _profileData = await engine.loadProfile(_selectedProfile);
+        _signature = _profileData['signature'] != false;
       }
 
       if (widget.filename != null) {
@@ -54,25 +58,36 @@ class _LetterEditorScreenState extends ConsumerState<LetterEditorScreen>
         _bodyController.text = data['body']?.toString() ?? '';
         final attachments = fm['attachments'] as List? ?? [];
         _attachmentsController.text = attachments.join('\n');
+        if (fm['date'] != null) {
+          _dateController.text = fm['date'].toString();
+        }
+        _signature = fm['signature'] != false && fm['signature'] != null;
       } else {
         _recipientController.text =
             'Firma/Amt\nVorname Nachname\nStrasse 1\n12345 Stadt';
+        _bodyController.text = 'Sehr geehrte Damen und Herren,\n\n';
       }
-    } catch (_) {
-      // Leere Felder anzeigen
-    }
+    } catch (_) {}
     setState(() => _loading = false);
   }
 
-  Future<void> _save() async {
+  Future<void> _onProfileChanged(String? name) async {
+    if (name == null) return;
     final engine = ref.read(engineProvider);
     if (engine == null) return;
+    _selectedProfile = name;
+    _profileData = await engine.loadProfile(name);
+    setState(() {});
+  }
 
-    final frontmatter = <String, dynamic>{
+  Map<String, dynamic> _buildFrontmatter() {
+    return {
       ..._profileData,
       'subject':
           _subjectController.text.isEmpty ? null : _subjectController.text,
-      'date': null,
+      'date':
+          _dateController.text.isEmpty ? null : _dateController.text,
+      'signature': _signature,
       'recipient': _recipientController.text
           .split('\n')
           .where((l) => l.trim().isNotEmpty)
@@ -82,10 +97,15 @@ class _LetterEditorScreenState extends ConsumerState<LetterEditorScreen>
           .where((l) => l.trim().isNotEmpty)
           .toList(),
     };
+  }
+
+  Future<void> _save() async {
+    final engine = ref.read(engineProvider);
+    if (engine == null) return;
 
     try {
       await engine.saveLetter(
-        frontmatter: frontmatter,
+        frontmatter: _buildFrontmatter(),
         body: _bodyController.text,
         filename: widget.filename,
       );
@@ -104,29 +124,12 @@ class _LetterEditorScreenState extends ConsumerState<LetterEditorScreen>
     final engine = ref.read(engineProvider);
     if (engine == null) return;
 
-    // Erst speichern
-    final frontmatter = <String, dynamic>{
-      ..._profileData,
-      'subject':
-          _subjectController.text.isEmpty ? null : _subjectController.text,
-      'date': null,
-      'recipient': _recipientController.text
-          .split('\n')
-          .where((l) => l.trim().isNotEmpty)
-          .toList(),
-      'attachments': _attachmentsController.text
-          .split('\n')
-          .where((l) => l.trim().isNotEmpty)
-          .toList(),
-    };
-
     try {
       final savedPath = await engine.saveLetter(
-        frontmatter: frontmatter,
+        frontmatter: _buildFrontmatter(),
         body: _bodyController.text,
         filename: widget.filename,
       );
-      // PDF auf den Desktop ausgeben
       final desktop = '${Platform.environment['HOME']}/Desktop';
       final pdfPath = await engine.compile(savedPath, outputDir: desktop);
       ref.invalidate(letterListProvider);
@@ -149,6 +152,7 @@ class _LetterEditorScreenState extends ConsumerState<LetterEditorScreen>
     _recipientController.dispose();
     _bodyController.dispose();
     _attachmentsController.dispose();
+    _dateController.dispose();
     super.dispose();
   }
 
@@ -190,13 +194,38 @@ class _LetterEditorScreenState extends ConsumerState<LetterEditorScreen>
       body: TabBarView(
         controller: _tabController,
         children: [
+          // Tab 1: Metadaten
           ListView(
             padding: const EdgeInsets.all(16),
             children: [
+              // Profil-Auswahl
+              if (_profiles.length > 1) ...[
+                DropdownButtonFormField<String>(
+                  value: _selectedProfile,
+                  decoration: const InputDecoration(
+                    labelText: 'Profil',
+                    border: OutlineInputBorder(),
+                  ),
+                  items: _profiles
+                      .map((p) => DropdownMenuItem(value: p, child: Text(p)))
+                      .toList(),
+                  onChanged: _onProfileChanged,
+                ),
+                const SizedBox(height: 12),
+              ],
               TextFormField(
                 controller: _subjectController,
                 decoration: const InputDecoration(
                   labelText: 'Betreff',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _dateController,
+                decoration: const InputDecoration(
+                  labelText: 'Datum (leer = heute)',
+                  hintText: 'z.B. 21. April 2026',
                   border: OutlineInputBorder(),
                 ),
               ),
@@ -220,8 +249,15 @@ class _LetterEditorScreenState extends ConsumerState<LetterEditorScreen>
                   alignLabelWithHint: true,
                 ),
               ),
+              const SizedBox(height: 8),
+              SwitchListTile(
+                title: const Text('Unterschrift'),
+                value: _signature,
+                onChanged: (v) => setState(() => _signature = v),
+              ),
             ],
           ),
+          // Tab 2: Brieftext (Markdown)
           Padding(
             padding: const EdgeInsets.all(16),
             child: TextFormField(
