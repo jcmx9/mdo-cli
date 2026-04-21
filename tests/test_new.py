@@ -1,5 +1,6 @@
 import datetime
 from pathlib import Path
+from unittest.mock import patch
 
 import yaml
 from typer.testing import CliRunner
@@ -55,7 +56,8 @@ def test_new_includes_profile_fields(profile_yaml: Path, work_dir: Path) -> None
     assert isinstance(fm["recipient"], list)
 
 
-def test_new_fails_without_profile(work_dir: Path) -> None:
+@patch("mdo.commands.new.load_profile", side_effect=FileNotFoundError("not found"))
+def test_new_fails_without_profile(mock_load: object, work_dir: Path) -> None:
     result = runner.invoke(app, ["new", "--silent"])
     assert result.exit_code != 0
     assert "profile" in result.output.lower()

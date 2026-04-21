@@ -13,11 +13,12 @@ from mdo.core.letter import load_letter as core_load_letter
 from mdo.core.letter import save_letter as core_save_letter
 from mdo.core.models import ProfileConfig
 from mdo.core.paths import fonts_dir as core_fonts_dir
-from mdo.core.paths import mdo_base_dir
 from mdo.core.profile import delete_profile as core_delete_profile
+from mdo.core.profile import find_signature as core_find_signature
 from mdo.core.profile import list_profiles as core_list_profiles
 from mdo.core.profile import load_profile as core_load_profile
 from mdo.core.profile import save_profile as core_save_profile
+from mdo.core.profile import save_signature as core_save_signature
 from mdo.core.template import get_installed_version as core_get_version
 from mdo.core.template import install_template as core_install_template
 
@@ -112,19 +113,19 @@ def _handle_compile(params: dict[str, object]) -> dict[str, object]:
     return {"pdf_path": str(pdf_path), "subject": data.subject, "date": data.date}
 
 
-def _handle_copy_signature(params: dict[str, object]) -> str:
-    """Kopiere eine Signatur-Datei nach ~/.mdo/unterschrift_PROFILNAME.ext."""
+def _handle_save_signature(params: dict[str, object]) -> str:
+    """Kopiere eine Signatur-Datei ins Profilverzeichnis."""
     source = Path(str(params["source"]))
     profile_name = str(params.get("profile_name", "default"))
-    if not source.exists():
-        msg = f"File not found: {source}"
-        raise FileNotFoundError(msg)
-    ext = source.suffix
-    target = mdo_base_dir() / f"unterschrift_{profile_name}{ext}"
-    import shutil
+    path = core_save_signature(source, name=profile_name)
+    return str(path)
 
-    shutil.copy2(str(source), str(target))
-    return str(target)
+
+def _handle_find_signature(params: dict[str, object]) -> str | None:
+    """Finde die Signatur-Datei eines Profils."""
+    profile_name = str(params.get("profile_name", "default"))
+    sig = core_find_signature(profile_name)
+    return str(sig) if sig else None
 
 
 METHODS: dict[str, object] = {
@@ -141,7 +142,8 @@ METHODS: dict[str, object] = {
     "load_letter": _handle_load_letter,
     "list_letters": _handle_list_letters,
     "delete_letter": _handle_delete_letter,
-    "copy_signature": _handle_copy_signature,
+    "save_signature": _handle_save_signature,
+    "find_signature": _handle_find_signature,
 }
 
 

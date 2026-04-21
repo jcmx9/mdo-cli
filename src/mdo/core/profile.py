@@ -1,6 +1,7 @@
 """Multi-profile management for mdo."""
 
 import logging
+import shutil
 from pathlib import Path
 
 import yaml
@@ -22,12 +23,14 @@ FIELD_COMMENTS: dict[str, str] = {
     "bank": "Bankname",
     "accent": "Akzentfarbe als Hex (null = Template-Standard)",
     "qr_code": "vCard-QR-Code im Infoblock anzeigen",
-    "signature": "Unterschrift-Datei automatisch suchen (unterschrift.svg/png/jpg/gif)",
+    "signature": "Unterschrift-Datei automatisch suchen",
     "signature_width": "Unterschrift-Breite in mm (null = Template-Standard 30pt)",
     "closing": "Schlussgruss",
     "open": "PDF nach Kompilierung oeffnen",
     "reveal": "PDF im Dateimanager anzeigen",
 }
+
+SIGNATURE_EXTENSIONS = ("svg", "png", "jpg", "gif")
 
 
 def _format_value(value: object) -> str:
@@ -57,11 +60,16 @@ def _serialize_profile(data: dict[str, object]) -> str:
     return "\n".join(lines) + "\n"
 
 
+def profile_dir(name: str = "default") -> Path:
+    """Return the directory for a specific profile."""
+    return profiles_dir() / name
+
+
 def save_profile(config: ProfileConfig, name: str = "default") -> Path:
-    """Save a profile to ~/.mdo/profiles/{name}.yaml."""
-    target_dir = profiles_dir()
-    target_dir.mkdir(parents=True, exist_ok=True)
-    path = target_dir / f"{name}.yaml"
+    """Save a profile to ~/.mdo/profiles/{name}/profile.yaml."""
+    target = profile_dir(name)
+    target.mkdir(parents=True, exist_ok=True)
+    path = target / "profile.yaml"
     data = config.model_dump()
     path.write_text(_serialize_profile(data), encoding="utf-8")
     logger.debug("Profile saved to %s", path)
@@ -69,11 +77,16 @@ def save_profile(config: ProfileConfig, name: str = "default") -> Path:
 
 
 def load_profile(name: str = "default") -> ProfileConfig:
-    """Load a profile from ~/.mdo/profiles/{name}.yaml."""
-    path = profiles_dir() / f"{name}.yaml"
+    """Load a profile from ~/.mdo/profiles/{name}/profile.yaml."""
+    path = profile_dir(name) / "profile.yaml"
     if not path.exists():
-        msg = f"Profile not found: {path}"
-        raise FileNotFoundError(msg)
+        # Fallback: altes Format (profiles/{name}.yaml direkt)
+        legacy = profiles_dir() / f"{name}.yaml"
+        if legacy.exists():
+            path = legacy
+        else:
+            msg = f"Profile not found: {path}"
+            raise FileNotFoundError(msg)
     data = yaml.safe_load(path.read_text(encoding="utf-8"))
     return ProfileConfig.model_validate(data)
 
@@ -83,17 +96,55 @@ def list_profiles() -> list[str]:
     target_dir = profiles_dir()
     if not target_dir.exists():
         return []
-    return sorted(p.stem for p in target_dir.glob("*.yaml"))
+    names: list[str] = []
+    for p in sorted(target_dir.iterdir()):
+        if p.is_dir() and (p / "profile.yaml").exists():
+            names.append(p.name)
+        elif p.is_file() and p.suffix == ".yaml":
+            # Legacy: flache YAML-Datei
+            names.append(p.stem)
+    return names
 
 
 def delete_profile(name: str) -> None:
-    """Delete a profile. Cannot delete 'default'."""
+    """Delete a profile directory. Cannot delete 'default'."""
     if name == "default":
         msg = "Cannot delete the default profile"
         raise ValueError(msg)
-    path = profiles_dir() / f"{name}.yaml"
-    if not path.exists():
-        msg = f"Profile not found: {path}"
+    target = profile_dir(name)
+    if target.is_dir():
+        shutil.rmtree(target)
+    else:
+        # Legacy
+        legacy = profiles_dir() / f"{name}.yaml"
+        if not legacy.exists():
+            msg = f"Profile not found: {name}"
+            raise FileNotFoundError(msg)
+        legacy.unlink()
+    logger.debug("Profile deleted: %s", name)
+
+
+def save_signature(source: Path, name: str = "default") -> Path:
+    """Copy a signature file into the profile directory.
+
+    Renames to unterschrift_{name}.ext.
+    """
+    if not source.exists():
+        msg = f"File not found: {source}"
         raise FileNotFoundError(msg)
-    path.unlink()
-    logger.debug("Profile deleted: %s", path)
+    target = profile_dir(name)
+    target.mkdir(parents=True, exist_ok=True)
+    ext = source.suffix.lower()
+    dest = target / f"unterschrift_{name}{ext}"
+    shutil.copy2(str(source), str(dest))
+    logger.debug("Signature saved to %s", dest)
+    return dest
+
+
+def find_signature(name: str = "default") -> Path | None:
+    """Find the signature file for a profile."""
+    target = profile_dir(name)
+    for ext in SIGNATURE_EXTENSIONS:
+        for candidate in target.glob(f"unterschrift*.{ext}"):
+            return candidate
+    return None

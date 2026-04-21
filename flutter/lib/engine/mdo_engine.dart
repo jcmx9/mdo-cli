@@ -69,13 +69,21 @@ class MdoEngine {
     return (result as Map<String, dynamic>)['pdf_path'] as String;
   }
 
-  /// Kopiert eine Signatur-Datei nach ~/.mdo/unterschrift_PROFILNAME.ext.
-  Future<String> copySignature(String sourcePath, String profileName) async {
-    final result = await call('copy_signature', {
+  /// Kopiert eine Signatur-Datei ins Profilverzeichnis.
+  Future<String> saveSignature(String sourcePath, String profileName) async {
+    final result = await call('save_signature', {
       'source': sourcePath,
       'profile_name': profileName,
     });
     return result as String;
+  }
+
+  /// Findet die Signatur-Datei eines Profils.
+  Future<String?> findSignature(String profileName) async {
+    final result = await call('find_signature', {
+      'profile_name': profileName,
+    });
+    return result as String?;
   }
 
   /// Speichert einen Brief.

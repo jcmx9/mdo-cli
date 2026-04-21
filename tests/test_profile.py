@@ -16,7 +16,7 @@ def test_profile_create_with_defaults(mock_dir: object, tmp_path: Path) -> None:
     mock_dir.return_value = profiles_path  # type: ignore[union-attr]
     result = runner.invoke(app, ["profile", "create"], input="\n" * 14)
     assert result.exit_code == 0
-    p = profiles_path / "default.yaml"
+    p = profiles_path / "default" / "profile.yaml"
     assert p.exists()
     data = yaml.safe_load(p.read_text())
     assert data["name"] == "Max Mustermann"
@@ -46,7 +46,7 @@ def test_profile_create_with_custom_values(mock_dir: object, tmp_path: Path) -> 
     )
     result = runner.invoke(app, ["profile", "create"], input=inputs)
     assert result.exit_code == 0
-    data = yaml.safe_load((profiles_path / "default.yaml").read_text())
+    data = yaml.safe_load((profiles_path / "default" / "profile.yaml").read_text())
     assert data["name"] == "Anna Weber"
     assert data["city"] == "Muenchen"
 
@@ -58,7 +58,7 @@ def test_profile_create_named(mock_dir: object, tmp_path: Path) -> None:
     mock_dir.return_value = profiles_path  # type: ignore[union-attr]
     result = runner.invoke(app, ["profile", "create", "--name", "work"], input="\n" * 14)
     assert result.exit_code == 0
-    assert (profiles_path / "work.yaml").exists()
+    assert (profiles_path / "work" / "profile.yaml").exists()
 
 
 @patch("mdo.core.profile.profiles_dir")
@@ -68,7 +68,7 @@ def test_profile_no_quotes_on_zip(mock_dir: object, tmp_path: Path) -> None:
     mock_dir.return_value = profiles_path  # type: ignore[union-attr]
     result = runner.invoke(app, ["profile", "create"], input="\n" * 14)
     assert result.exit_code == 0
-    raw = (profiles_path / "default.yaml").read_text()
+    raw = (profiles_path / "default" / "profile.yaml").read_text()
     assert "zip: 12345" in raw
     assert "'12345'" not in raw
     assert '"12345"' not in raw
@@ -89,8 +89,10 @@ def test_profile_list_shows_profiles(mock_dir: object, tmp_path: Path) -> None:
     profiles_path = tmp_path / "profiles"
     profiles_path.mkdir()
     mock_dir.return_value = profiles_path  # type: ignore[union-attr]
-    (profiles_path / "default.yaml").write_text("name: Test\n")
-    (profiles_path / "work.yaml").write_text("name: Work\n")
+    (profiles_path / "default").mkdir()
+    (profiles_path / "default" / "profile.yaml").write_text("name: Test\n")
+    (profiles_path / "work").mkdir()
+    (profiles_path / "work" / "profile.yaml").write_text("name: Work\n")
     result = runner.invoke(app, ["profile", "list"])
     assert result.exit_code == 0
     assert "default" in result.output
@@ -102,10 +104,12 @@ def test_profile_delete(mock_dir: object, tmp_path: Path) -> None:
     profiles_path = tmp_path / "profiles"
     profiles_path.mkdir()
     mock_dir.return_value = profiles_path  # type: ignore[union-attr]
-    (profiles_path / "temp.yaml").write_text("name: Temp\n")
+    (profiles_path / "temp").mkdir()
+    (profiles_path / "temp" / "profile.yaml").write_text("name: Temp\n")
     result = runner.invoke(app, ["profile", "delete", "temp"])
     assert result.exit_code == 0
-    assert not (profiles_path / "temp.yaml").exists()
+    assert not (profiles_path / "temp").exists()
+    assert not (profiles_path / "temp" / "profile.yaml").exists()
 
 
 @patch("mdo.core.profile.profiles_dir")
@@ -113,6 +117,7 @@ def test_profile_delete_default_fails(mock_dir: object, tmp_path: Path) -> None:
     profiles_path = tmp_path / "profiles"
     profiles_path.mkdir()
     mock_dir.return_value = profiles_path  # type: ignore[union-attr]
-    (profiles_path / "default.yaml").write_text("name: Default\n")
+    (profiles_path / "default").mkdir()
+    (profiles_path / "default" / "profile.yaml").write_text("name: Default\n")
     result = runner.invoke(app, ["profile", "delete", "default"])
     assert result.exit_code != 0

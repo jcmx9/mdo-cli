@@ -35,14 +35,14 @@ def sample_profile() -> ProfileConfig:
 class TestSaveProfile:
     def test_save_default(self, profiles_path: Path, sample_profile: ProfileConfig) -> None:
         result = save_profile(sample_profile)
-        assert result == profiles_path / "default.yaml"
+        assert result == profiles_path / "default" / "profile.yaml"
         assert result.exists()
         data = yaml.safe_load(result.read_text())
         assert data["name"] == "Max Mustermann"
 
     def test_save_named(self, profiles_path: Path, sample_profile: ProfileConfig) -> None:
         result = save_profile(sample_profile, name="work")
-        assert result == profiles_path / "work.yaml"
+        assert result == profiles_path / "work" / "profile.yaml"
         assert result.exists()
 
 
@@ -81,7 +81,7 @@ class TestDeleteProfile:
     def test_delete_existing(self, profiles_path: Path, sample_profile: ProfileConfig) -> None:
         save_profile(sample_profile, name="temp")
         delete_profile("temp")
-        assert not (profiles_path / "temp.yaml").exists()
+        assert not (profiles_path / "temp").exists()
 
     def test_delete_nonexistent_raises(self) -> None:
         with pytest.raises(FileNotFoundError):

@@ -203,7 +203,7 @@ class _ProfileFormScreenState extends ConsumerState<ProfileFormScreen> {
                   try {
                     final name = widget.profileName ?? 'default';
                     final path =
-                        await engine.copySignature(file.path, name);
+                        await engine.saveSignature(file.path, name);
                     setState(() => _signaturePath = path);
                   } catch (e) {
                     if (mounted) {
