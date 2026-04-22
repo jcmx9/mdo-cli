@@ -27,5 +27,5 @@ def md_to_typst(text: str) -> str:
 
     output = result.stdout.rstrip("\n")
     # Pandoc generiert <label> Tags nach Headings — entfernen
-    output = re.sub(r"\n<[a-z0-9-]+>", "", output)
+    output = re.sub(r"\n<[^>]+>", "\n", output)
     return output

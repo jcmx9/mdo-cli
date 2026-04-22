@@ -2,6 +2,7 @@
 
 import logging
 import re
+import shutil
 import subprocess
 from pathlib import Path
 
@@ -191,6 +192,15 @@ def compile_letter(
     # Signature
     _resolve_signature(data, letter_path.parent)
 
+    # Copy signature into letter dir so Typst can read() it
+    sig_copy: Path | None = None
+    if isinstance(data.signature, str):
+        sig_src = Path(data.signature)
+        if sig_src.is_absolute() and sig_src.parent != letter_path.parent:
+            sig_copy = letter_path.parent / sig_src.name
+            shutil.copy2(str(sig_src), str(sig_copy))
+            data.signature = sig_src.name
+
     # Convert body
     typst_body = md_to_typst(body)
 
@@ -248,3 +258,5 @@ def compile_letter(
             typ_path.unlink()
         if json_path.exists():
             json_path.unlink()
+        if sig_copy and sig_copy.exists():
+            sig_copy.unlink()

@@ -8,14 +8,14 @@ PACKAGE_NAME = "din5008a"
 FALLBACK_VERSION = "0.1.1"
 
 
-def mdo_base_dir() -> Path:
-    """Return the mdo base directory (~/.mdo)."""
+def mdo_config_dir() -> Path:
+    """Return the mdo config directory (~/.mdo)."""
     return Path.home() / ".mdo"
 
 
 def profiles_dir() -> Path:
     """Return the mdo profiles directory (~/.mdo/profiles)."""
-    return mdo_base_dir() / "profiles"
+    return mdo_config_dir() / "profiles"
 
 
 def fonts_dir() -> Path:
@@ -23,7 +23,7 @@ def fonts_dir() -> Path:
 
     Checks ~/.mdo/fonts/ first, falls back to legacy ~/.local/share/mdo/fonts/.
     """
-    new_path = mdo_base_dir() / "fonts"
+    new_path = mdo_config_dir() / "fonts"
     if new_path.exists():
         return new_path
     legacy_path = Path.home() / ".local" / "share" / "mdo" / "fonts"
@@ -33,8 +33,8 @@ def fonts_dir() -> Path:
 
 
 def letters_dir() -> Path:
-    """Return the letters directory (~/.mdo/letters/)."""
-    return mdo_base_dir() / "letters"
+    """Return the letters directory (~/MarkdownOffice)."""
+    return Path.home() / "MarkdownOffice"
 
 
 def typst_packages_dir() -> Path:

@@ -56,7 +56,7 @@ class MdoApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      title: 'mdo',
+      title: 'MarkdownOffice',
       theme: ThemeData(
         colorSchemeSeed: Colors.blueGrey,
         useMaterial3: true,

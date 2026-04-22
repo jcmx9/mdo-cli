@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mdo_app/providers/engine_provider.dart';
 import 'package:mdo_app/providers/profile_provider.dart';
@@ -155,6 +158,38 @@ class _ProfileFormScreenState extends ConsumerState<ProfileFormScreen> {
     super.dispose();
   }
 
+  Widget? _buildColorPreview(String text) {
+    final hex = text.replaceFirst('#', '').trim();
+    if (hex.length != 6 || int.tryParse(hex, radix: 16) == null) return null;
+    return Padding(
+      padding: const EdgeInsets.all(8),
+      child: Container(
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          color: Color(0xFF000000 | int.parse(hex, radix: 16)),
+          borderRadius: BorderRadius.circular(4),
+          border: Border.all(color: Colors.grey),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSignaturePreview() {
+    final path = _signaturePath!;
+    final ext = path.split('.').last.toLowerCase();
+    if (ext == 'svg') {
+      return SvgPicture.file(
+        File(path),
+        fit: BoxFit.contain,
+      );
+    }
+    return Image.file(
+      File(path),
+      fit: BoxFit.contain,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_loading) {
@@ -207,9 +242,14 @@ class _ProfileFormScreenState extends ConsumerState<ProfileFormScreen> {
                 padding: const EdgeInsets.only(bottom: 12),
                 child: TextFormField(
                   controller: _controllers[key],
+                  onChanged: key == 'accent' ? (_) => setState(() {}) : null,
                   decoration: InputDecoration(
                     labelText: label,
+                    hintText: key == 'accent' ? '#' : null,
                     border: const OutlineInputBorder(),
+                    suffixIcon: key == 'accent'
+                        ? _buildColorPreview(_controllers['accent']!.text)
+                        : null,
                   ),
                   validator: (key == 'name' ||
                           key == 'street' ||
@@ -266,7 +306,7 @@ class _ProfileFormScreenState extends ConsumerState<ProfileFormScreen> {
                   }
                 },
                 child: Container(
-                  height: 80,
+                  constraints: const BoxConstraints(minHeight: 80),
                   decoration: BoxDecoration(
                     border: Border.all(
                       color: _dragging
@@ -282,18 +322,33 @@ class _ProfileFormScreenState extends ConsumerState<ProfileFormScreen> {
                             .withValues(alpha: 0.1)
                         : Colors.grey.withValues(alpha: 0.05),
                   ),
-                  child: Center(
-                    child: _signaturePath != null
-                        ? Text(
-                            'Unterschrift: ${_signaturePath!.split('/').last}',
-                            style: const TextStyle(color: Colors.green),
-                          )
-                        : const Text(
+                  child: _signaturePath != null
+                      ? Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Column(
+                            children: [
+                              SizedBox(
+                                height: 80,
+                                child: _buildSignaturePreview(),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                _signaturePath!.split('/').last,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : const Center(
+                          child: Text(
                             'Unterschrift-Datei hierher ziehen\n(SVG, PNG, JPG, GIF)',
                             textAlign: TextAlign.center,
                             style: TextStyle(color: Colors.grey),
                           ),
-                  ),
+                        ),
                 ),
               ),
             ],

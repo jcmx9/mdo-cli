@@ -25,6 +25,7 @@ def build_typst_files(*, data: LetterData, body: str) -> tuple[str, str]:
     }
     json_content = json.dumps(json_data, ensure_ascii=False, indent=2)
 
+    sig_width_line = "\n  signature-width: sig-width," if data.signature_width else ""
     accent_line = "\n  accent: rgb(data.accent)," if data.accent else ""
 
     typ_content = f"""\
@@ -41,8 +42,7 @@ def build_typst_files(*, data: LetterData, body: str) -> tuple[str, str]:
   date: data.date,
   subject: data.subject,
   closing: data.closing,
-  signature: sig,
-  signature-width: sig-width,{accent_line}
+  signature: sig,{sig_width_line}{accent_line}
   attachments: data.at("attachments", default: ()),
 )
 

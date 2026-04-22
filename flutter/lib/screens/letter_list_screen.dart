@@ -14,7 +14,7 @@ class LetterListScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('mdo'),
+        title: const Text('MarkdownOffice'),
         actions: [
           IconButton(
             icon: const Icon(Icons.person),

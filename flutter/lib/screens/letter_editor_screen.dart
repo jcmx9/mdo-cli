@@ -81,7 +81,7 @@ class _LetterEditorScreenState extends ConsumerState<LetterEditorScreen>
   }
 
   Map<String, dynamic> _buildFrontmatter() {
-    return {
+    final fm = {
       ..._profileData,
       'subject':
           _subjectController.text.isEmpty ? null : _subjectController.text,
@@ -97,6 +97,13 @@ class _LetterEditorScreenState extends ConsumerState<LetterEditorScreen>
           .where((l) => l.trim().isNotEmpty)
           .toList(),
     };
+    // Empty strings → null for optional fields
+    for (final key in ['accent', 'signature_width']) {
+      if (fm[key] is String && (fm[key] as String).isEmpty) {
+        fm[key] = null;
+      }
+    }
+    return fm;
   }
 
   Future<void> _save() async {
@@ -130,12 +137,10 @@ class _LetterEditorScreenState extends ConsumerState<LetterEditorScreen>
         body: _bodyController.text,
         filename: widget.filename,
       );
-      final desktop = '${Platform.environment['HOME']}/Desktop';
-      final pdfPath = await engine.compile(savedPath, outputDir: desktop);
+      final pdfPath = await engine.compile(savedPath);
       ref.invalidate(letterListProvider);
-      if (mounted) {
-        context.push('/pdf/${Uri.encodeComponent(pdfPath)}');
-      }
+      // PDF im Finder anzeigen
+      await Process.run('open', ['-R', pdfPath]);
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
