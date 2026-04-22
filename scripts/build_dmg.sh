@@ -24,7 +24,15 @@ echo "==> Building macOS app..."
 cd "$FLUTTER_DIR"
 flutter build macos
 
-# --- 4. Generate .icns from icon PNGs ---
+# --- 4. Copy bundled binaries into app ---
+echo "==> Copying typst and pandoc into app bundle..."
+RESOURCES="$RELEASE_DIR/$APP_NAME.app/Contents/Resources"
+cp "$FLUTTER_DIR/macos/Runner/Resources/typst" "$RESOURCES/typst"
+cp "$FLUTTER_DIR/macos/Runner/Resources/pandoc" "$RESOURCES/pandoc"
+chmod +x "$RESOURCES/typst" "$RESOURCES/pandoc"
+
+# --- 5. Generate .icns from icon PNGs ---
+
 echo "==> Generating .icns..."
 ICONSET="/tmp/AppIcon_$$.iconset"
 mkdir -p "$ICONSET"
