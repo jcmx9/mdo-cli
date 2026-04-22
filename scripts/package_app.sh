@@ -19,7 +19,7 @@ cp "$FLUTTER_DIR/python/main.py" "$PACK_DIR/main.py"
 
 # Install dependencies into pack dir
 echo "==> Installing Python dependencies..."
-python3 -m pip install --target "$PACK_DIR" pydantic pyyaml --quiet --disable-pip-version-check
+python3.12 -m pip install --target "$PACK_DIR" pydantic pyyaml --quiet --disable-pip-version-check
 
 echo "==> Running serious_python packager..."
 
