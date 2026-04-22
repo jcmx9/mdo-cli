@@ -8,7 +8,7 @@
 PRODUCT_NAME = MarkdownOffice
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.example.mdoApp
+PRODUCT_BUNDLE_IDENTIFIER = de.jcmx9.markdownoffice
 
 // The copyright displayed in application information
-PRODUCT_COPYRIGHT = Copyright © 2026 com.example. All rights reserved.
+PRODUCT_COPYRIGHT = Copyright © 2026 jcmx9. All rights reserved.

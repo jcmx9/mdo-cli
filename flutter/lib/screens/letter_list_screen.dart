@@ -34,14 +34,6 @@ class LetterListScreen extends ConsumerWidget {
             tooltip: 'Einstellungen',
             onPressed: () => context.push('/settings'),
           ),
-          Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: Icon(
-              engine != null ? Icons.check_circle : Icons.error,
-              color: engine != null ? Colors.green : Colors.red,
-              size: 16,
-            ),
-          ),
         ],
       ),
       floatingActionButton: FloatingActionButton(
