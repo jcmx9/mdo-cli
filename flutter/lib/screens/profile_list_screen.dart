@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mdo_app/providers/engine_provider.dart';
 import 'package:mdo_app/providers/profile_provider.dart';
@@ -12,7 +13,16 @@ class ProfileListScreen extends ConsumerWidget {
     final profilesAsync = ref.watch(profileListProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Profile')),
+      appBar: AppBar(
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SvgPicture.asset('assets/logo.svg', height: 32),
+            const SizedBox(width: 8),
+            const Text('Profile'),
+          ],
+        ),
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => context.push('/profile/create'),
         child: const Icon(Icons.add),

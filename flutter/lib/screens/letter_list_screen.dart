@@ -18,7 +18,7 @@ class LetterListScreen extends ConsumerWidget {
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            SvgPicture.asset('assets/logo.svg', height: 24),
+            SvgPicture.asset('assets/logo.svg', height: 32),
             const SizedBox(width: 8),
             const Text('MarkdownOffice'),
           ],
