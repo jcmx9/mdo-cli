@@ -84,7 +84,7 @@ exclude_lines = [
 ]
 
 [tool.bumpversion]
-current_version = "26.4.33"
+current_version = "26.4.34"
 commit = true
 tag = false
 commit_message = "release: {new_version}"
