@@ -30,9 +30,9 @@ PROFILE_FIELDS = [
     ("city", "Ort", "Musterstadt"),
     ("phone", "Telefon", "0123 456789"),
     ("email", "E-Mail", "max@example.de"),
-    ("iban", "IBAN", "DE89 3704 0044 0532 0130 00"),
-    ("bic", "BIC", "COBADEFFXXX"),
-    ("bank", "Bank", "Commerzbank"),
+    ("iban", "IBAN (null = ohne)", "null"),
+    ("bic", "BIC (null = ohne)", "null"),
+    ("bank", "Bank (null = ohne)", "null"),
     ("accent", "Akzentfarbe (Hex oder null)", "null"),
     ("signature_width", "Unterschrift-Breite in mm (null = Standard)", "null"),
 ]
@@ -49,7 +49,7 @@ def create(
 
     for key, label, default in PROFILE_FIELDS:
         value = typer.prompt(f"  {label}", default=default)
-        if key in ("accent", "signature_width") and value.lower() == "null":
+        if key in ("accent", "signature_width", "iban", "bic", "bank") and value.lower() == "null":
             data[key] = None
         elif key == "signature_width" and value.lower() != "null":
             data[key] = int(value)

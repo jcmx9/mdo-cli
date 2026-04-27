@@ -34,9 +34,9 @@ class LetterData(BaseModel):
     city: str
     phone: str = ""
     email: str = ""
-    iban: str = ""
-    bic: str = ""
-    bank: str = ""
+    iban: str | None = None
+    bic: str | None = None
+    bank: str | None = None
     qr_code: bool = False
     signature: str | bool | None = None
     signature_width: int | None = None
@@ -111,9 +111,9 @@ class ProfileConfig(BaseModel):
     city: str
     phone: str = ""
     email: str = ""
-    iban: str = ""
-    bic: str = ""
-    bank: str = ""
+    iban: str | None = None
+    bic: str | None = None
+    bank: str | None = None
     accent: str | None = None
     signature_width: int | None = None
     qr_code: bool = False
